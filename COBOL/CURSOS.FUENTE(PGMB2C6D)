@@ -1,0 +1,207 @@
+       IDENTIFICATION DIVISION.                                         00002000
+      *                                                        *        00003000
+       PROGRAM-ID. PGMB2C6D.                                            00004004
+      **********************************************************        00005000
+      *                                                        *        00006000
+      *  PROGRAMA PARA SQL EMBEBIDO                            *        00007000
+      *                                                        *        00016500
+      **********************************************************        00016800
+      *      MANTENIMIENTO DE PROGRAMA                         *        00016900
+      **********************************************************        00017000
+      *  FECHA   *    DETALLE        * COD *                            00018000
+      **************************************                            00019000
+      *          *                   *     *                            00019100
+      *          *                   *     *                            00019200
+      **************************************                            00019300
+       ENVIRONMENT DIVISION.                                            00019400
+       CONFIGURATION SECTION.                                           00019500
+       SPECIAL-NAMES.                                                   00019600
+           DECIMAL-POINT IS COMMA.                                      00019700
+                                                                        00019800
+       INPUT-OUTPUT SECTION.                                            00019900
+       FILE-CONTROL.                                                    00020000
+                                                                        00020600
+                                                                        00022400
+       DATA DIVISION.                                                   00022500
+       FILE SECTION.                                                    00022600
+      **************************************                            00040700
+       WORKING-STORAGE SECTION.                                         00040800
+      **************************************                            00040900
+       77  FILLER        PIC X(26) VALUE '* INICIO WORKING-STORAGE *'.  00041000
+                                                                        00041100
+       77  WS-CODE-SAL      PIC XX    VALUE SPACES.                     00041200
+       01  WS-FLAG-FIN      PIC X.                                      00041400
+           88  WS-SI-PROCESO      VALUE ' '.                            00041500
+           88  WS-FIN-PROCESO     VALUE 'F'.                            00041600
+                                                                        00052800
+       01 WS-TITULO.                                                    00052900
+          03  FILLER               PIC X(11)    VALUE                   00053005
+           '| SUCURSAL '.                                               00053105
+          03  FILLER               PIC X(23)    VALUE                   00053204
+           '| CANTIDAD DE CUENTAS |'.                                   00053304
+                                                                        00053400
+                                                                        00053700
+      *****************************************                         00053800
+      *         LAYOUT TABLA CUENTAS          *                         00053900
+      *                                       *                         00054900
+      *****************************************                         00055000
+       01 WS-RENGLON-BLANCO       PIC X(34)     VALUE SPACES.           00055104
+       01 WS-RENGLON-SEPARADOR    PIC X(34)     VALUE ALL '-'.          00055204
+                                                                        00055304
+       01 WS-REG-SALIDA.                                                00055400
+          03  FILLER              PIC X(05)     VALUE                   00055504
+           '|    '.                                                     00055604
+          03  REG-SUCUEN          PIC 9(02)     VALUE ZEROS.            00055704
+          03  FILLER              PIC X(04)     VALUE                   00055804
+           '    '.                                                      00055904
+          03  FILLER              PIC X(10)     VALUE                   00056004
+           '|         '.                                                00056104
+          03  REG-CANT-CUEN       PIC 9(03)     VALUE ZEROS.            00056204
+          03  FILLER              PIC X(10)     VALUE                   00056304
+           '        | '.                                                00056404
+                                                                        00056504
+       01  WS-CANT-CUEN PIC S9(09) COMP-3       VALUE ZEROS.            00056604
+                                                                        00056700
+       77  FILLER        PIC X(26) VALUE '* VARIABLES SQL          *'.  00056800
+       77  WS-SQLCODE    PIC +++999 USAGE DISPLAY VALUE ZEROS.          00056900
+                                                                        00057000
+            EXEC SQL                                                    00057100
+              INCLUDE SQLCA                                             00057200
+            END-EXEC.                                                   00057300
+                                                                        00057400
+            EXEC SQL                                                    00057500
+              INCLUDE TBCURCTA                                          00057600
+            END-EXEC.                                                   00057700
+                                                                        00057804
+            EXEC SQL                                                    00057904
+              INCLUDE TBCURCLI                                          00058004
+            END-EXEC.                                                   00058104
+                                                                        00058204
+            EXEC SQL                                                    00058304
+               DECLARE CURSOR_CUENTAS CURSOR FOR                        00058404
+                  SELECT A.SUCUEN,                                      00058504
+                         COUNT(A.NROCLI)                                00058604
+                  FROM KC02803.TBCURCTA A                               00058704
+                  INNER JOIN KC02803.TBCURCLI B                         00058804
+                          ON A.NROCLI = B.NROCLI                        00058904
+                  WHERE A.SALDO > 0                                     00059004
+                  GROUP BY A.SUCUEN                                     00059104
+                  ORDER BY A.SUCUEN                                     00059204
+            END-EXEC.                                                   00059304
+                                                                        00059404
+       01 WS-TOT-SUC PIC 9(02)     VALUE ZEROS.                         00059504
+       01 WS-TOT-CUE PIC 9(03)     VALUE ZEROS.                         00059604
+                                                                        00059704
+       77  FILLER        PIC X(26) VALUE '* FINAL  WORKING-STORAGE *'.  00059804
+                                                                        00059904
+      ***************************************************************.  00060004
+       PROCEDURE DIVISION.                                              00060104
+      **************************************                            00060204
+      *                                    *                            00060304
+      *  CUERPO PRINCIPAL DEL PROGRAMA     *                            00060404
+      *                                    *                            00060504
+      **************************************                            00060604
+       MAIN-PROGRAM.                                                    00060704
+                                                                        00060804
+           PERFORM 1000-I-INICIO   THRU                                 00060904
+                   1000-F-INICIO.                                       00061004
+                                                                        00061104
+           PERFORM 2000-I-PROCESO  THRU                                 00061204
+                   2000-F-PROCESO        UNTIL WS-FIN-PROCESO.          00061304
+                                                                        00061404
+           PERFORM 9999-I-FINAL    THRU                                 00061504
+                   9999-F-FINAL.                                        00061604
+                                                                        00061704
+       F-MAIN-PROGRAM. GOBACK.                                          00061804
+                                                                        00061904
+      **************************************                            00062004
+      *                                    *                            00062104
+      *  CUERPO INICIO APERTURA ARCHIVOS   *                            00062204
+      *                                    *                            00062304
+      **************************************                            00062404
+       1000-I-INICIO.                                                   00062504
+           SET WS-SI-PROCESO TO TRUE.                                   00063000
+                                                                        00075600
+           EXEC SQL                                                     00075700
+              OPEN CURSOR_CUENTAS                                       00075804
+           END-EXEC.                                                    00075900
+                                                                        00076000
+           IF SQLCODE = ZEROS                                           00076104
+              DISPLAY WS-RENGLON-SEPARADOR                              00076204
+              DISPLAY WS-RENGLON-SEPARADOR                              00076304
+              DISPLAY WS-TITULO                                         00076404
+              DISPLAY WS-RENGLON-SEPARADOR                              00076504
+           ELSE                                                         00076604
+              MOVE SQLCODE   TO WS-SQLCODE                              00076704
+              DISPLAY '* ERROR OPEN CURSOR      = ' WS-SQLCODE          00076804
+              MOVE 9999 TO RETURN-CODE                                  00076904
+              SET  WS-FIN-PROCESO TO TRUE                               00077004
+           END-IF.                                                      00077104
+                                                                        00077204
+                                                                        00077304
+       1000-F-INICIO.   EXIT.                                           00077404
+                                                                        00077504
+      **************************************                            00077604
+      *                                    *                            00077704
+      *  CUERPO PRINCIPAL DEL PROGRAMA     *                            00077804
+      *                                    *                            00077904
+      **************************************                            00078004
+       2000-I-PROCESO.                                                  00078104
+           INITIALIZE WS-REG-SALIDA                                     00078204
+                                                                        00078304
+           EXEC SQL                                                     00081300
+              FETCH  CURSOR_CUENTAS                                     00081404
+                     INTO                                               00081500
+                        :WS-SUCUEN,                                     00081604
+                        :WS-CANT-CUEN                                   00081704
+           END-EXEC.                                                    00082000
+                                                                        00082300
+           EVALUATE TRUE                                                00082400
+             WHEN SQLCODE EQUAL ZEROS                                   00082500
+                ADD 1 TO WS-TOT-SUC                                     00082604
+                MOVE WS-SUCUEN TO REG-SUCUEN                            00082804
+                MOVE WS-CANT-CUEN TO REG-CANT-CUEN                      00082904
+                ADD REG-CANT-CUEN TO WS-TOT-CUE                         00083006
+                                                                        00083104
+                DISPLAY WS-RENGLON-BLANCO                               00083204
+                DISPLAY WS-REG-SALIDA                                   00083304
+                DISPLAY WS-RENGLON-BLANCO                               00083404
+                DISPLAY WS-RENGLON-SEPARADOR                            00083504
+             WHEN SQLCODE EQUAL +100                                    00083604
+                SET WS-FIN-PROCESO TO TRUE                              00083704
+                                                                        00083804
+             WHEN OTHER                                                 00083904
+                MOVE SQLCODE TO WS-SQLCODE                              00084004
+                DISPLAY 'ERROR FETCH CURSOR: '   WS-SQLCODE             00084104
+                SET WS-FIN-PROCESO TO TRUE                              00084204
+           END-EVALUATE.                                                00084304
+                                                                        00084404
+       2000-F-PROCESO. EXIT.                                            00085000
+                                                                        00090900
+      **************************************                            00091000
+      *                                    *                            00091100
+      *  CUERPO FINAL CIERRE DE FILES      *                            00091200
+      *                                    *                            00091300
+      **************************************                            00091400
+       9999-I-FINAL.                                                    00091500
+           IF RETURN-CODE NOT EQUAL 9999                                00091607
+              EXEC SQL                                                  00091707
+                 CLOSE CURSOR_CUENTAS                                   00091807
+              END-EXEC                                                  00091907
+                                                                        00092007
+              IF SQLCODE NOT EQUAL ZEROS                                00092107
+                 MOVE SQLCODE TO WS-SQLCODE                             00092207
+                 DISPLAY '* ERROR CLOSE CURSOR      = ' WS-SQLCODE      00092307
+                 MOVE 9999 TO RETURN-CODE                               00092407
+              END-IF                                                    00092507
+                                                                        00094007
+         **************************************                         00094107
+         *   MOSTRAR TOTALES DE CONTROL                                 00094207
+         **************************************                         00094307
+                                                                        00094407
+              DISPLAY 'TOTAL SUCURSALES: ' WS-TOT-SUC                   00094507
+              DISPLAY 'TOTAL CUENTAS: '    WS-TOT-CUE                   00094607
+           END-IF.                                                      00094907
+       9999-F-FINAL.                                                    00095000
+           EXIT.                                                        00096000
+      *                                                                 00097000

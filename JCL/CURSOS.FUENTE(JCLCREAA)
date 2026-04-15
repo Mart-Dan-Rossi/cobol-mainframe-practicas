@@ -1,0 +1,9 @@
+//KC03C6DD JOB CLASS=A,MSGCLASS=O,MSGLEVEL=(1,1),NOTIFY=&SYSUID         00010007
+//JOBLIB  DD  DSN=DSND10.SDSNLOAD,DISP=SHR                              00020001
+//        DD DSN=KC03C6D.CURSOS.PGMLIB,DISP=SHR                         00021007
+//*                                                                     00022009
+//STEP1    EXEC PGM=IEFBR14                                             00070009
+//DD1      DD DSN=KC03C6D.NOVECLI,UNIT=SYSDA,                           00080011
+//            DCB=(LRECL=244,BLKSIZE=24400,RECFM=FB),                   00090011
+//            SPACE=(TRK,(1,1),RLSE),DISP=(,CATLG)                      00100008
+//                                                                      00290000

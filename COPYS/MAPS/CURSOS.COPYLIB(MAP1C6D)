@@ -1,0 +1,74 @@
+       01  MAP1C6DI.
+           02  FILLER PIC X(12).
+           02  TC6DL    COMP  PIC  S9(4).
+           02  TC6DF    PICTURE X.
+           02  FILLER REDEFINES TC6DF.
+             03 TC6DA    PICTURE X.
+           02  TC6DI  PIC X(12).
+           02  FECHAL    COMP  PIC  S9(4).
+           02  FECHAF    PICTURE X.
+           02  FILLER REDEFINES FECHAF.
+             03 FECHAA    PICTURE X.
+           02  FECHAI  PIC X(10).
+           02  TIPDOCL    COMP  PIC  S9(4).
+           02  TIPDOCF    PICTURE X.
+           02  FILLER REDEFINES TIPDOCF.
+             03 TIPDOCA    PICTURE X.
+           02  TIPDOCI  PIC X(02).
+           02  NRODOCL    COMP  PIC  S9(4).
+           02  NRODOCF    PICTURE X.
+           02  FILLER REDEFINES NRODOCF.
+             03 NRODOCA    PICTURE X.
+           02  NRODOCI  PIC 9(11).
+           02  NROCLIL    COMP  PIC  S9(4).
+           02  NROCLIF    PICTURE X.
+           02  FILLER REDEFINES NROCLIF.
+             03 NROCLIA    PICTURE X.
+           02  NROCLII  PIC X(3).
+           02  NOMAPEL    COMP  PIC  S9(4).
+           02  NOMAPEF    PICTURE X.
+           02  FILLER REDEFINES NOMAPEF.
+             03 NOMAPEA    PICTURE X.
+           02  NOMAPEI  PIC X(30).
+           02  DIRECCL    COMP  PIC  S9(4).
+           02  DIRECCF    PICTURE X.
+           02  FILLER REDEFINES DIRECCF.
+             03 DIRECCA    PICTURE X.
+           02  DIRECCI  PIC X(30).
+           02  EMAILL    COMP  PIC  S9(4).
+           02  EMAILF    PICTURE X.
+           02  FILLER REDEFINES EMAILF.
+             03 EMAILA    PICTURE X.
+           02  EMAILI  PIC X(30).
+           02  TELEFL    COMP  PIC  S9(4).
+           02  TELEFF    PICTURE X.
+           02  FILLER REDEFINES TELEFF.
+             03 TELEFA    PICTURE X.
+           02  TELEFI  PIC X(15).
+           02  MSGL    COMP  PIC  S9(4).
+           02  MSGF    PICTURE X.
+           02  FILLER REDEFINES MSGF.
+             03 MSGA    PICTURE X.
+           02  MSGI  PIC X(72).
+       01  MAP1C6DO REDEFINES MAP1C6DI.
+           02  FILLER PIC X(12).
+           02  FILLER PICTURE X(3).
+           02  TC6DO  PIC X(12).
+           02  FILLER PICTURE X(3).
+           02  FECHAO  PIC X(10).
+           02  FILLER PICTURE X(3).
+           02  TIPDOCO PIC X(02).
+           02  FILLER PICTURE X(3).
+           02  NRODOCO PIC Z(11).
+           02  FILLER PICTURE X(3).
+           02  NROCLIO PIC Z(03).
+           02  FILLER PICTURE X(3).
+           02  NOMAPEO PIC X(30).
+           02  FILLER PICTURE X(3).
+           02  DIRECCO PIC X(30).
+           02  FILLER PICTURE X(3).
+           02  EMAILO PIC X(30).
+           02  FILLER PICTURE X(3).
+           02  TELEFO PIC X(15).
+           02  FILLER PICTURE X(3).
+           02  MSGO PIC X(72).

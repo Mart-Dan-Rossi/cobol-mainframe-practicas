@@ -1,0 +1,14 @@
+//KC03C6DH JOB CLASS=A,MSGCLASS=O,MSGLEVEL=(1,1),NOTIFY=&SYSUID,        00010000
+//             TIME=(,5)    ,RESTART=STEP2                              00011000
+//************************************
+//*        EJECUCION PROGRA HOLMUNDO *
+//*        XX= ULT 2 NúMEROS USER    *
+//************************************
+//STEP2    EXEC PGM=PGMSUMA
+//STEPLIB  DD DSN=KC03C6D.CURSOS.PGMLIB,DISP=SHR
+//*
+//SYSOUT   DD SYSOUT=*
+//SYSUDUMP DD SYSOUT=*
+//SYSIN    DD SYSOUT=*
+//*
+//

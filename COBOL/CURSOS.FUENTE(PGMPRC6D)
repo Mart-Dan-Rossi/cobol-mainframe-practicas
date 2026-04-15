@@ -1,0 +1,130 @@
+       IDENTIFICATION DIVISION.                                         00010006
+       PROGRAM-ID. PGMPRC6D.                                            00020010
+       DATA DIVISION.                                                   00030006
+       FILE SECTION.                                                    00040006
+       WORKING-STORAGE SECTION.                                         00050006
+       77 WS-INICIO       PIC X(20) VALUE 'INICIO DE LA WORKING'.       00060006
+       01 CT-CONSTANTES.                                                00070006
+          03 CT-MSGO.                                                   00080006
+             05 CT-MNS-01         PIC X(72) VALUE                       00090006
+                            'INGRESE LOS DATOS Y PRESIONE ENTER'.       00100006
+             05 CT-MNS-02         PIC X(72) VALUE                       00110006
+                            'DATOS INGRESADOS INCORRECTOS - REINGRESE'. 00120006
+             05 CT-MNS-03         PIC X(72) VALUE                       00130006
+                    'TIPO Y NÚMERO DOCUMENTO INEXISTENTES - REINGRESE'. 00140006
+             05 CT-MNS-04         PIC X(72) VALUE                       00150006
+                            'TIPO DE DOCUMENTO INVALIDO'.               00160006
+             05 CT-MNS-05         PIC X(72) VALUE                       00170006
+                            'NUMERO DE DOCUMENTO INVALIDO'.             00180006
+             05 CT-MNS-06         PIC X(72) VALUE 'CLIENTE ENCONTRADO'. 00190006
+             05 CT-MNS-08         PIC X(72) VALUE                       00200006
+                            'PROBLEMA CON ARCHIVO PERSONA'.             00210006
+             05 CT-MNS-09         PIC X(72) VALUE 'TECLA INVALIDA'.     00220006
+             05 CT-MNS-10         PIC X(72) VALUE 'ERROR SEND    '.     00230006
+             05 CT-MNS-EXIT       PIC X(72) VALUE                       00240006
+                            'FIN TRANSACCION BF1F'.                     00250006
+          03 CT-DATASET           PIC X(08)  VALUE 'PERSOC6D'.          00260010
+          03 CT-DATASET-LEN       PIC S9(04) COMP VALUE 160.            00270006
+                                                                        00280006
+       01 WS-VARIABLES.                                                 00290006
+      *   03 WS-MAP-00            PIC X(07)       VALUE 'MAP0099'.      00300006
+      *   03 WS-MAPSET-00         PIC X(07)       VALUE 'MAP0099'.      00310006
+          03 WS-MAP-01            PIC X(07)       VALUE 'MAP1C6D'.      00320010
+          03 WS-MAPSET-01         PIC X(07)       VALUE 'MAP1C6D'.      00330010
+          03 WS-LONG              PIC S9(04) COMP.                      00340006
+          03 WS-ABSTIME           PIC S9(16) COMP VALUE +0.             00350006
+          03 WS-FECHA             PIC X(10)       VALUE SPACES.         00360006
+          03 WS-SEP-DATE          PIC X           VALUE '/'.            00370006
+          03 WS-HORA              PIC X(08)       VALUE SPACES.         00380006
+          03 WS-SEP-HOUR          PIC X           VALUE ':'.            00390006
+          03 WS-RESP              PIC S9(04) COMP.                      00400006
+          03 SW-CONFIRMAR         PIC X VALUE 'Y'.                      00410006
+          03 WS-NORMAL    PIC X VALUE '*'.                              00420006
+          03 WS-ENTER     PIC X VALUE ' '.                              00430006
+                                                                        00440006
+       01 WS-COMMAREA.                                                  00450006
+          03 WS-USER-DATA.                                              00460006
+             05 WS-USER-TIPDOC    PIC X(02).                            00470006
+             05 WS-USER-NRODOC    PIC 9(11).                            00480006
+          03 WS-TIP-DOC           PIC X(02).                            00490006
+             88 WS-TIP-DOC-BOOLEAN                   VALUE 'DU'         00500006
+                                                           'PA'         00510006
+                                                           'PE'.        00520006
+          03 FILLER               PIC X(5).                             00530006
+                                                                        00540006
+       COPY MAP1C6D.                                                    00550010
+       COPY DFHBMSCA.                                                   00560006
+       COPY DFHAID.                                                     00570006
+       COPY CPPERSON.                                                   00580007
+                                                                        00590006
+       LINKAGE SECTION.                                                 00600006
+                                                                        00610006
+         01 DFHCOMMAREA PIC X(20).                                      00620006
+                                                                        00630006
+       PROCEDURE DIVISION.                                              00640006
+       MAIN-PROGRAM.                                                    00650006
+                                                                        00660006
+           MOVE DFHCOMMAREA TO WS-COMMAREA.                             00670006
+           EXEC CICS                                                    00680006
+                READ DATASET (CT-DATASET)                               00690006
+                RIDFLD  (WS-USER-DATA)                                  00700006
+                INTO (REG-PERSONA)                                      00710006
+                LENGTH (CT-DATASET-LEN)                                 00720006
+                EQUAL                                                   00730006
+                RESP (WS-RESP)                                          00740006
+           END-EXEC.                                                    00750006
+           EVALUATE WS-RESP                                             00760006
+            WHEN DFHRESP(NORMAL)                                        00770006
+                 INITIALIZE MAP1C6DO MAP1C6DI                           00771010
+                 MOVE PER-TIP-DOC TO  TIPDOCO                           00780011
+                 MOVE PER-NRO-DOC TO  NRODOCO                           00790013
+                 MOVE PER-CLI-NRO TO  NROCLIO                           00800006
+                 MOVE PER-NOMAPE  TO  NOMAPEO                           00810006
+                 MOVE PER-DIRECCION TO  DIRECCO                         00820012
+                 MOVE PER-EMAIL TO  EMAILO                              00830006
+                 MOVE PER-TELEFONO TO  TELEFO                           00840012
+                 MOVE LENGTH OF MAP1C6DO TO WS-LONG                     00850010
+                 MOVE 'CLIENTE ENCONTRADO' TO  MSGO                     00860012
+            WHEN DFHRESP(NOTFND)                                        00870006
+                 INITIALIZE MAP1C6DO                                    00880010
+                 MOVE WS-USER-TIPDOC TO TIPDOCO                         00890011
+                 MOVE WS-USER-NRODOC TO NRODOCO                         00900013
+                 MOVE LENGTH OF MAP1C6DO TO WS-LONG                     00910010
+                 MOVE CT-MNS-03            TO  MSGO                     00920012
+            WHEN OTHER                                                  00930006
+                 INITIALIZE MAP1C6DO                                    00940010
+                 MOVE WS-USER-TIPDOC TO TIPDOCO                         00950011
+                 MOVE WS-USER-NRODOC TO NRODOCO                         00960013
+                 MOVE LENGTH OF MAP1C6DO TO WS-LONG                     00970010
+                 MOVE CT-MNS-08 TO  MSGO                                00980012
+            END-EVALUATE.                                               00990006
+           EXEC CICS ASKTIME                                            01000006
+             ABSTIME (WS-ABSTIME)                                       01010006
+           END-EXEC.                                                    01020006
+           EXEC CICS FORMATTIME                                         01030006
+             ABSTIME (WS-ABSTIME)                                       01040006
+             DDMMYYYY (WS-FECHA) DATESEP(WS-SEP-DATE)                   01050006
+             TIME (WS-HORA) TIMESEP(WS-SEP-HOUR)                        01060006
+           END-EXEC.                                                    01070006
+           MOVE WS-FECHA TO FECHAO.                                     01080012
+           MOVE 'AC6D-MAP1C6D' TO TC6DO.                                01090012
+           EXEC CICS                                                    01100006
+              SEND MAP (WS-MAP-01)                                      01110006
+              MAPSET (WS-MAPSET-01)                                     01120006
+              FROM   (MAP1C6DO)                                         01130010
+              LENGTH (WS-LONG)                                          01140006
+              RESP (WS-RESP)                                            01150006
+              ERASE                                                     01161007
+           END-EXEC.                                                    01170006
+           EVALUATE WS-RESP                                             01180006
+            WHEN DFHRESP(NORMAL)                                        01190006
+               CONTINUE                                                 01200006
+            WHEN OTHER                                                  01210006
+                 INITIALIZE MAP1C6DO                                    01220010
+                 MOVE CT-MNS-10 TO  MSGO                                01230012
+                 EXEC CICS SEND TEXT FROM(MSGO) END-EXEC                01240012
+            END-EVALUATE.                                               01250006
+           EXEC CICS                                                    01260006
+             RETURN                                                     01270006
+             TRANSID  ('BC6D')                                          01280010
+           END-EXEC.                                                    01300006

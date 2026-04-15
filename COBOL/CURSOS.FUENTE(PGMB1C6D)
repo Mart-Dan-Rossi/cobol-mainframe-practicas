@@ -1,0 +1,178 @@
+**********************************************************        
+*                                                        *        
+*  PARA VER DEFINICION ARCHIVO VSAM KSDS                 *        
+*  ACCESO SECUENCIAL                                     *        
+*                                                        *        
+**********************************************************        
+*      MANTENIMIENTO DE PROGRAMA                         *        
+**********************************************************        
+*  FECHA   *    DETALLE        * COD *                            
+**************************************                            
+*          *                   *     *                            
+*          *                   *     *                            
+**************************************                            
+ IDENTIFICATION DIVISION.                                         
+ PROGRAM-ID PGMB2C6D.                                             
+ ENVIRONMENT DIVISION.                                            
+ CONFIGURATION SECTION.
+ SPECIAL-NAMES.
+     DECIMAL-POINT IS COMMA.
+ INPUT-OUTPUT SECTION.                                            
+ FILE-CONTROL.                                                    
+       SELECT NOV      ASSIGN TO DDNOV                            
+              ORGANIZATION IS INDEXED
+              ACCESS MODE IS SEQUENTIAL
+              RECORD KEY IS NOV-KEY
+              FILE STATUS IS WS-NOV-CODE.                         
+                                                                  
+ DATA DIVISION.                                                   
+ FILE SECTION.                                                    
+ FD NOV.                                                          
+ 01 REG-NOVED.
+    03  NOV-KEY     PIC X(17).
+    03  FILLER      PIC X(227).
+*01 FD-REG-NOV-IN.
+*   03 NOV-KEY.
+*      05 KEY_TIPO_NOVEDAD PIC X(2).
+*      05 KEY_TIPO_DOCUMENTO PIC X(2).
+*      05 KEY_NRO_DOCUMENTO PIC 9(11).
+*      05 KEY_NRO_SECUENCIA_NOVCLI PIC 9(2).
+*   03 FILLER         PIC X(227).
+*                                                                 
+**************************************                            
+ WORKING-STORAGE SECTION.                                         
+**************************************                            
+ 77  FILLER        PIC X(26) VALUE '* INICIO WORKING-STORAGE *'.  
+ 77  FILLER        PIC X(26) VALUE '* CODIGOS RETORNO FILES  *'.  
+**************************************                            
+*        CONTROL DE FINAL           *                             
+**************************************                            
+ 77 WS-NOV-CODE    PIC XX    VALUE ZEROS.
+ 77 WS-SQLCODE-MASC   PIC S9(4).
+ 01 WS-STATUS-FIN     PIC X.
+    88 WS-FIN-LECTURA         VALUE 'Y'.
+    88 WS-NO-FIN-LECTURA      VALUE 'N'.
+**************************************                            
+*       LAYOUT VSAM CLIENTES         *                            
+**************************************                            
+ COPY TBVCLIEN.
+**************************************                            
+*      SQL                           *                            
+**************************************                            
+      EXEC SQL INCLUDE SQLCA END-EXEC.
+      EXEC SQL INCLUDE TBCURCLI END-EXEC.
+************************************                              
+*          CONTADORES              *
+************************************
+ 01 WS-CONTADORES.
+    03 WS-NOVEDADES-LEIDAS   PIC 9(03)  VALUE ZEROS.
+    03 WS-NOVEDADES-ERRONEAS PIC 9(03)  VALUE ZEROS.
+    03 WS-INSER              PIC 9(03)  VALUE ZEROS.
+ 77 FILLER        PIC X(26) VALUE '* FINAL  WORKING-STORAGE *'.   
+***************************************************************.  
+ PROCEDURE DIVISION.                                              
+**************************************                            
+*  CUERPO PRINCIPAL DEL PROGRAMA     *                            
+*                                    *                            
+**************************************                            
+ MAIN-PROGRAM.                                                    
+                                                                  
+     PERFORM 1000-INICIO  THRU   F-1000-INICIO.                   
+                                                                  
+     PERFORM 2000-PROCESO  THRU  F-2000-PROCESO                   
+             UNTIL WS-FIN-LECTURA.                                
+                                                                  
+     PERFORM 9999-FINAL    THRU  F-9999-FINAL.                    
+                                                                  
+ F-MAIN-PROGRAM. GOBACK.                                          
+                                                                  
+**************************************                            
+*                                    *                            
+*  CUERPO INICIO APERTURA ARCHIVOS   *                            
+*                                    *                            
+**************************************                            
+ 1000-INICIO.                                                     
+     SET WS-NO-FIN-LECTURA TO TRUE.                               
+     OPEN INPUT  NOV.                                             
+     IF WS-NOV-CODE IS NOT EQUAL '00'                             
+        DISPLAY '* ERROR EN OPEN NOVEDAD= ' WS-NOV-CODE           
+        MOVE 9999 TO RETURN-CODE                                  
+        SET  WS-FIN-LECTURA TO TRUE                               
+     ELSE
+        PERFORM 4000-I-LEER-NOV   THRU 4000-F-LEER-NOV            
+     END-IF.                                                      
+                                                                  
+ F-1000-INICIO.   EXIT.                                           
+                                                                  
+**************************************                            
+*  CUERPO PRINCIPAL DE PROCESOS      *                            
+**************************************                            
+ 2000-PROCESO.                                                    
+     MOVE WK-CLI-TIPO-DOCUMENTO         TO WT-TIPDOC.
+     MOVE WK-CLI-NRO-DOCUMENTO          TO WT-NRODOC.
+     MOVE WK-CLI-NRO-CLIENTE            TO WT-NROCLI.
+     MOVE WK-CLI-NOMBRE-CLIENTE(1:15)   TO WT-NOMAPE(1:15).
+     MOVE WK-CLI-APELLIDO-CLIENTE(1:15) TO WT-NOMAPE(16:15).
+     MOVE WK-CLI-FECHA-NACIMIENTO       TO WT-FECNAC.
+     MOVE WK-CLI-SEXO(1:1)              TO WT-SEXO.
+     EXEC SQL INSERT
+                INTO KC02803.TBCURCLI
+           (TIPDOC, NRODOC, NROCLI, NOMAPE, FECNAC, SEXO)
+             VALUES (:WT-TIPDOC,
+                     :WT-NRODOC,
+                     :WT-NROCLI,
+                     :WT-NOMAPE,
+                     :WT-FECNAC,
+                     :WT-SEXO)
+     END-EXEC.
+     IF SQLCODE = 0
+         ADD 1 TO WS-INSER
+     ELSE IF SQLCODE = -803
+         ADD 1 TO WS-NOVEDADES-ERRONEAS
+         DISPLAY 'REGISTRO DUPLICADO. CLAVE: ' NOV-KEY
+     ELSE
+         MOVE SQLCODE TO WS-SQLCODE-MASC
+         DISPLAY 'ERROR AL INSERTAR REGISTRO: ' WS-SQLCODE-MASC
+         EXEC SQL
+             ROLLBACK
+         END-EXEC
+         SET WS-FIN-LECTURA TO TRUE
+     END-IF.
+     PERFORM 4000-I-LEER-NOV   THRU 4000-F-LEER-NOV.
+ F-2000-PROCESO.
+**************************************                            
+* LECTURA CLIENTE                    *                            
+**************************************                            
+ 4000-I-LEER-NOV.                                                 
+                                                                  
+     READ NOV INTO WK-TBCLIE.                                     
+                                                                  
+     EVALUATE WS-NOV-CODE                                         
+       WHEN '00'                                                  
+         ADD 1 TO WS-NOVEDADES-LEIDAS
+       WHEN '10'                                                  
+         SET WS-FIN-LECTURA TO TRUE                               
+       WHEN OTHER                                                 
+         DISPLAY '* ERROR EN LECTURA NOVEDADES= ' WS-NOV-CODE     
+         MOVE 9999 TO RETURN-CODE                                 
+         SET WS-FIN-LECTURA TO TRUE                               
+                                                                  
+     END-EVALUATE.                                                
+ 4000-F-LEER-NOV. EXIT.                                           
+**************************************
+*  CUERPO FINAL CIERRE DE FILES      *                            
+**************************************                            
+ 9999-FINAL.                                                      
+                                                                  
+     CLOSE NOV                                                    
+        IF WS-NOV-CODE IS NOT EQUAL '00'                          
+          DISPLAY '* ERROR EN CLOSE NOVEDAD= ' WS-NOV-CODE        
+          MOVE 9999 TO RETURN-CODE                                
+          SET WS-FIN-LECTURA TO TRUE                              
+        END-IF.                                                   
+                                                                  
+     DISPLAY 'NOVEDADES LEIDAS: '          WS-NOVEDADES-LEIDAS.
+     DISPLAY 'NOVEDADES ERRONEAS: '        WS-NOVEDADES-ERRONEAS.
+     DISPLAY 'CLIENTES GRABADOS: '         WS-INSER.
+ F-9999-FINAL.                                                    
+     EXIT.                                                        

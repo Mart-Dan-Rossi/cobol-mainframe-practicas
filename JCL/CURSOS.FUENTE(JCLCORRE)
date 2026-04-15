@@ -1,0 +1,32 @@
+//KC03C6DD JOB CLASS=A,MSGCLASS=O,MSGLEVEL=(1,1),NOTIFY=&SYSUID         00010007
+//JOBLIB  DD  DSN=DSND10.SDSNLOAD,DISP=SHR                              00020001
+//        DD DSN=KC03C6D.CURSOS.PGMLIB,DISP=SHR                         00021007
+//***************************************************************       00030000
+//* SI NO SE BORRA EL ARCHIVO DE SALIDA PREVIAMENTE             *       00031009
+//* EJECUTAR STEP2 SOLO LA PRIMERA VEZ PARA DEFINIR SALIDA      *       00040009
+//***************************************************************       00050000
+//STEP1    EXEC PGM=IDCAMS,COND=(8,LT)                                  00051014
+//SYSPRINT DD SYSOUT=*                                                  00052014
+//SYSIN    DD *                                                         00053014
+   DELETE   KC03C6D.LISTADO.CORRE                                       00055017
+   SET MAXCC=0                                                          00057014
+//***************************************************************       00120000
+//*      EJECUTAR PROGRAMA COBOL CON SQL EMBEBIDO               *       00130000
+//***************************************************************       00140000
+//*                                                                     00150000
+//STEP2    EXEC PGM=IKJEFT01,DYNAMNBR=20,COND=(4,LT)                    00160014
+//SYSTSPRT DD SYSOUT=*                                                  00170000
+//DDSALID  DD DSN=KC03C6D.LISTADO.CORRE,UNIT=SYSDA,                     00181017
+//            DCB=(LRECL=133,BLKSIZE=0000,RECFM=FBA),                   00182014
+//         SPACE=(TRK,(1,1),RLSE),DISP=(,CATLG,CATLG)                   00183014
+//SYSOUT   DD SYSOUT=*                                                  00190000
+//SYSTSIN  DD *                                                         00200000
+  DSN SYSTEM(DBDG)                                                      00210000
+  RUN  PROGRAM(CORRECCE) PLAN(CURSOC6D) +                               00220017
+      LIB('KC03C6D.CURSOS.PGMLIB')                                      00230007
+  END                                                                   00240000
+//SYSPRINT DD SYSOUT=*                                                  00250000
+//SYSUDUMP DD SYSOUT=*                                                  00260000
+//SYSIN    DD *                                                         00270000
+//*                                                                     00280000
+//                                                                      00290000

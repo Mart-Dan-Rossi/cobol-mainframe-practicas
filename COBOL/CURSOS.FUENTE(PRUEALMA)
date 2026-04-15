@@ -1,0 +1,24 @@
+       IDENTIFICATION DIVISION.                                         00010001
+       PROGRAM-ID. PRUEALMA.                                            00020001
+                                                                        00075000
+       ENVIRONMENT DIVISION.                                            00076000
+       CONFIGURATION SECTION.                                           00077000
+                                                                        00077100
+       SPECIAL-NAMES.                                                   00078000
+           DECIMAL-POINT IS COMMA.                                      00079000
+                                                                        00079100
+       DATA DIVISION.                                                   00130000
+       WORKING-STORAGE SECTION.                                         00210000
+                                                                        00220001
+      ** DECLARACION DE VARIABLES                                       00230001
+       77  VARIABLE        PIC X(3)         VALUE 'MAR'.                00240004
+                                                                        00250001
+      *****************************************************             00469101
+       PROCEDURE DIVISION.                                              00469201
+      *****************************************************             00469401
+                                                                        00469501
+      * ACA VAN A CONSTRUIR LA LOGICA QUE NECESITAN                     00469601
+           DISPLAY 'CONTENIDO DE LA VARIABLE: ' VARIABLE                00469701
+      * ACA VA LA SENTENCIA QUE TERMINA EL PROGRAMA 'GOBACK'            00469801
+           GOBACK.                                                      02300001
+      *                                                                 02310001

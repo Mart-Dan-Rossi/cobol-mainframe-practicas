@@ -1,0 +1,15 @@
+**************************************                    
+*         LAYOUT NOVEDAD CLIENTES    *                    
+*                                    *                    
+*  KC03XXX.NOVCLIEN.VALID            *                    
+*                                    *                    
+*  ES EL CPNOVCLI VALIDADO           *                    
+*                                    *                    
+*         LARGO 55 BYTES             *                    
+*                                    *                    
+**************************************                    
+                                                          
+ 01 REG-NOVCLIE-VAL.                                      
+     03  NOV-SECUEN          PIC 9(05)    VALUE ZEROS.    
+     03  NOV-RESTO           PIC X(50)    VALUE SPACES.   
+                                                          

@@ -1,0 +1,159 @@
+       IDENTIFICATION DIVISION.
+      *                                                        *
+        PROGRAM-ID PGM3CC6D.
+      **********************************************************
+      *                                                        *
+      *  ABRIL 2025  PROGRAMA CON DECLARACION DE ARCHIVOS      *
+      *                                                        *
+      **********************************************************
+      *      MANTENIMIENTO DE PROGRAMA                         *
+      **********************************************************
+      *  FECHA   *    DETALLE        * COD *
+      **************************************
+      *23/10/2025*SUM SALDO A 'DU'   *     *
+      *          *                   *     *
+      *          *                   *     *
+      *          *                   *     *
+      *          *                   *     *
+      **************************************
+       ENVIRONMENT DIVISION.
+       CONFIGURATION SECTION.
+       SPECIAL-NAMES.
+           DECIMAL-POINT IS COMMA.
+
+       INPUT-OUTPUT SECTION.
+       FILE-CONTROL.
+             SELECT CLIENTE ASSIGN DDCLIENT
+                    FILE STATUS IS WS-FILE-CLI.
+
+       DATA DIVISION.
+       FILE SECTION.
+       FD CLIENTE
+            BLOCK CONTAINS 0 RECORDS
+            RECORDING MODE IS F.
+
+       01 R-CLIENTE      PIC X(50).
+
+
+      **************************************
+       WORKING-STORAGE SECTION.
+      **************************************
+       77  FILLER        PIC X(26) VALUE '* INICIO WORKING-STORAGE *'.
+
+       77  FILLER        PIC X(26) VALUE '* CODIGOS RETORNO FILES  *'.
+       77  WS-FILE-CLI      PIC XX    VALUE SPACES.
+      **************************************
+
+       77  WS-STATUS-CLI    PIC X.
+           88  WS-FIN-CLI             VALUE 'Y'.
+           88  WS-NO-FIN-CLI         VALUE 'N'.
+
+      **************************************
+      *         LAYOUT SUCURSAL            *
+      **************************************
+           COPY CPCLI.
+
+       77  WS-SUMA-SALDOS          PIC S9(12)V99 COMP-3 VALUE ZEROS.
+       77  WS-TOTAL-DISP           PIC -$ZZZ.ZZZ.ZZZ.ZZ9,99
+                                                        VALUE ZEROS.
+       77  FILLER        PIC X(26) VALUE '* FINAL  WORKING-STORAGE *'.
+
+      ***************************************************************.
+       PROCEDURE DIVISION.
+      **************************************
+      *                                    *
+      *  CUERPO PRINCIPAL DEL PROGRAMA     *
+      *                                    *
+      **************************************
+       MAIN-PROGRAM.
+
+           PERFORM 1000-INICIO  THRU   F-1000-INICIO.
+
+           PERFORM 2000-PROCESO  THRU  F-2000-PROCESO
+                   UNTIL WS-FIN-CLI.
+
+           PERFORM 9999-FINAL    THRU  F-9999-FINAL.
+
+       F-MAIN-PROGRAM. GOBACK.
+
+      **************************************
+      *                                    *
+      *  CUERPO INICIO APERTURA ARCHIVOS   *
+      *                                    *
+      **************************************
+       1000-INICIO.
+           SET WS-NO-FIN-CLI TO TRUE.
+
+           OPEN INPUT  CLIENTE.
+
+
+           IF WS-FILE-CLI IS NOT EQUAL '00'
+              DISPLAY '* ERROR EN OPEN ARCHIVO CLIENTE = ' WS-FILE-CLI
+              MOVE 9999 TO RETURN-CODE
+              SET  WS-FIN-CLI     TO TRUE
+           END-IF.
+
+           PERFORM 2100-LEER THRU F-2100-LEER.
+       F-1000-INICIO.   EXIT.
+
+      **************************************
+      *                                    *
+      *  CUERPO PRINCIPAL DE PROCESOS      *
+      *                                    *
+      **************************************
+       2000-PROCESO.
+           IF CLI-TIP-DOC = 'DU'
+              ADD CLI-SALDO TO WS-SUMA-SALDOS
+           END-IF.
+
+           PERFORM 2100-LEER THRU F-2100-LEER.
+       F-2000-PROCESO. EXIT.
+
+       2100-LEER.
+           READ CLIENTE  INTO REG-CLIENTE
+
+           EVALUATE WS-FILE-CLI
+              WHEN '00'
+                SET WS-NO-FIN-CLI  TO TRUE
+              WHEN '10'
+                SET WS-FIN-CLI  TO TRUE
+
+              WHEN OTHER
+                DISPLAY '* ERROR EN LECTURA CLIENTE = ' WS-FILE-CLI
+                MOVE 9999 TO RETURN-CODE
+                SET WS-FIN-CLI  TO TRUE
+
+           END-EVALUATE.
+       F-2100-LEER. EXIT.
+      **************************************
+      *                                    *
+      *  CUERPO FINAL CIERRE DE FILES      *
+      *                                    *
+      **************************************
+       9999-FINAL.
+
+           IF RETURN-CODE = 9999
+            CONTINUE
+           ELSE
+            CLOSE CLIENTE
+            IF WS-FILE-CLI IS EQUAL '00'
+               MOVE WS-SUMA-SALDOS TO WS-TOTAL-DISP
+               DISPLAY 'TOTAL IMPORTE SUMADO PARA TIPO DE DOCUMENTO DU:'
+               DISPLAY WS-TOTAL-DISP
+            ELSE
+               DISPLAY '* ERROR EN CLOSE ARCHIVO CLIENTE = '
+                                            WS-FILE-CLI
+               MOVE 9999 TO RETURN-CODE
+               SET WS-FIN-CLI     TO TRUE
+            END-IF
+
+
+      **************************************
+      *   MOSTRAR TOTALES DE CONTROL
+      **************************************
+
+           END-IF.
+
+       F-9999-FINAL.
+           EXIT.
+      *

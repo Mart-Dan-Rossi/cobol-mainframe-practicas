@@ -1,0 +1,74 @@
+       01  MAP3C6DI.
+           02  FILLER PIC X(12).
+           02  FECHAL    COMP  PIC  S9(4).
+           02  FECHAF    PICTURE X.
+           02  FILLER REDEFINES FECHAF.
+             03 FECHAA    PICTURE X.
+           02  FECHAI  PIC X(10).
+           02  TIPDOCL    COMP  PIC  S9(4).
+           02  TIPDOCF    PICTURE X.
+           02  FILLER REDEFINES TIPDOCF.
+             03 TIPDOCA    PICTURE X.
+           02  TIPDOCI  PIC X(02).
+           02  NUMDOCL    COMP  PIC  S9(4).
+           02  NUMDOCF    PICTURE X.
+           02  FILLER REDEFINES NUMDOCF.
+             03 NUMDOCA    PICTURE X.
+           02  NUMDOCI  PIC 9(11).
+           02  NOMAPEL    COMP  PIC  S9(4).
+           02  NOMAPEF    PICTURE X.
+           02  FILLER REDEFINES NOMAPEF.
+             03 NOMAPEA    PICTURE X.
+           02  NOMAPEI  PIC X(30).
+           02  DIAL    COMP  PIC  S9(4).
+           02  DIAF    PICTURE X.
+           02  FILLER REDEFINES DIAF.
+             03 DIAA    PICTURE X.
+           02  DIAI  PIC 9(02).
+           02  MESL    COMP  PIC  S9(4).
+           02  MESF    PICTURE X.
+           02  FILLER REDEFINES MESF.
+             03 MESA    PICTURE X.
+           02  MESI  PIC 9(02).
+           02  ANIOL    COMP  PIC  S9(4).
+           02  ANIOF    PICTURE X.
+           02  FILLER REDEFINES ANIOF.
+             03 ANIOA    PICTURE X.
+           02  ANIOI  PIC 9(04).
+           02  SEXOL    COMP  PIC  S9(4).
+           02  SEXOF    PICTURE X.
+           02  FILLER REDEFINES SEXOF.
+             03 SEXOA    PICTURE X.
+           02  SEXOI  PIC X.
+           02  NROCLIL    COMP  PIC  S9(4).
+           02  NROCLIF    PICTURE X.
+           02  FILLER REDEFINES NROCLIF.
+             03 NROCLIA    PICTURE X.
+           02  NROCLII  PIC 9(03).
+           02  MSGL    COMP  PIC  S9(4).
+           02  MSGF    PICTURE X.
+           02  FILLER REDEFINES MSGF.
+             03 MSGA    PICTURE X.
+           02  MSGI  PIC X(72).
+       01  MAP3C6DO REDEFINES MAP3C6DI.
+           02  FILLER PIC X(12).
+           02  FILLER PICTURE X(3).
+           02  FECHAO PIC X(10).
+           02  FILLER PICTURE X(3).
+           02  TIPDOCO PIC X(02).
+           02  FILLER PICTURE X(3).
+           02  NUMDOCO PIC 9(11).
+           02  FILLER PICTURE X(3).
+           02  NOMAPEO PIC X(30).
+           02  FILLER PICTURE X(3).
+           02  DIAO PIC Z(02).
+           02  FILLER PICTURE X(3).
+           02  MESO PIC Z(02).
+           02  FILLER PICTURE X(3).
+           02  ANIOO PIC Z(04).
+           02  FILLER PICTURE X(3).
+           02  SEXOO PIC X.
+           02  FILLER PICTURE X(3).
+           02  NROCLIO PIC 9(03).
+           02  FILLER PICTURE X(3).
+           02  MSGO PIC X(72).

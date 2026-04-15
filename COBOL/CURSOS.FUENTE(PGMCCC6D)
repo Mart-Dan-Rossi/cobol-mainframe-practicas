@@ -1,0 +1,257 @@
+       IDENTIFICATION DIVISION.                                         00010000
+      *                                                        *        00010100
+        PROGRAM-ID PGMCCC6D.                                            00010201
+      *                                                        *        00010300
+       ENVIRONMENT DIVISION.                                            00019100
+      *                                                        *        00019200
+       CONFIGURATION SECTION.                                           00019300
+                                                                        00019400
+       SPECIAL-NAMES.                                                   00019500
+           DECIMAL-POINT IS COMMA.                                      00019600
+                                                                        00019700
+       INPUT-OUTPUT SECTION.                                            00019800
+       FILE-CONTROL.                                                    00020200
+      *PONER NOMBRE LOGICO INTERNO Y AJUSTAR ASSING
+             SELECT CLIENTE ASSIGN DDDATCLI                             00020301
+      *NOMBRAR APROPIADAMENTE EL FS
+                    FILE STATUS IS FS-CLIENTE.                          00020401
+                                                                        00020500
+       DATA DIVISION.                                                   00020600
+       FILE SECTION.                                                    00020700
+       FD CLIENTE                                                       00020801
+            BLOCK CONTAINS 0 RECORDS                                    00020900
+            RECORDING MODE IS F.                                        00021000
+      *CAMBIAR EL PICK POR EL LARGO CORRECTO                            00022000
+       01 REG-CLIENTE    PIC X(142).                                    00023001
+                                                                        00025000
+      **************************************                            00026000
+       WORKING-STORAGE SECTION.                                         00027000
+      **************************************                            00028000
+       77  FILLER        PIC X(26) VALUE '* INICIO WORKING-STORAGE *'.  00029000
+                                                                        00030000
+      **************************************                            00040100
+      *         FILE STATUS                *                            00040200
+      **************************************                            00040300
+       77  FS-CLIENTE       PIC XX    VALUE SPACES.                     00041001
+      **************************************                            00042000
+                                                                        00043000
+       77  WS-STATUS-CLIENTE PIC XX.                                    00044001
+           88  WS-STATUS-FIN          VALUE '10'.                       00045001
+           88  WS-STATUS-CONT         VALUE '00'.                       00046001
+                                                                        00047000
+      *CAMBIAR COPY
+           COPY CPDATOCD.                                               00111101
+                                                                        00113900
+      * CONTADORES                                                      00114000
+       77  WS-CANT-LEIDOS          PIC 9(3)             VALUE ZEROS.    00114100
+       77  WS-PARCIALES-CORTE      PIC 9(3)             VALUE ZEROS.    00114601
+       77  WS-PARCIALES-PATRIM     PIC S9(13)V99 COMP-3 VALUE ZEROS.
+       77  WS-PARCIALES-DEUDOR     PIC S9(13)V99 COMP-3 VALUE ZEROS.
+       77  WS-TOTALES-PATRIM       PIC S9(13)V99 COMP-3 VALUE ZEROS.
+       77  WS-TOTALES-DEUDOR       PIC S9(13)V99 COMP-3 VALUE ZEROS.
+      *MASCARAS
+       77  WS-MASC-NUM-3           PIC ZZ9              VALUE ZEROS.    00114200
+       77  WS-MASC-SALDO           PIC -$$$.$$$.$$$.$$$.$$9,99
+                                                        VALUE ZEROS.
+      *CAMBIAR NOMBRE POR EL DEL CAMPO DE CORTE
+       77  WS-EST-CIV-ANT          PIC X(10)            VALUE SPACES.   00114301
+                                                                        00114701
+       77  FILLER        PIC X(26) VALUE '* FINAL  WORKING-STORAGE *'.  00114801
+
+                                                                        00114901
+      ***************************************************************.  00115001
+       PROCEDURE DIVISION.                                              00115101
+      **************************************                            00115201
+      *                                    *                            00116000
+      *  CUERPO PRINCIPAL DEL PROGRAMA     *                            00117000
+      *                                    *                            00118000
+      **************************************                            00119000
+       MAIN-PROGRAM.                                                    00120000
+                                                                        00130000
+           PERFORM 1000-INICIO  THRU   F-1000-INICIO.                   00140000
+                                                                        00150000
+           PERFORM 2000-PROCESO  THRU  F-2000-PROCESO                   00160000
+                   UNTIL WS-STATUS-FIN.                                 00170000
+                                                                        00180000
+           PERFORM 9999-FINAL    THRU  F-9999-FINAL.                    00190000
+                                                                        00200000
+       F-MAIN-PROGRAM. GOBACK.                                          00210000
+                                                                        00220000
+      **************************************                            00230000
+      *                                    *                            00240000
+      *  CUERPO INICIO APERTURA ARCHIVOS   *                            00250000
+      *                                    *                            00260000
+      **************************************                            00270000
+       1000-INICIO.                                                     00280000
+                                                                        00281001
+           SET WS-STATUS-CONT TO TRUE                                   00290000
+                                                                        00300000
+           OPEN INPUT  CLIENTE                                          00310000
+                                                                        00330000
+           IF FS-CLIENTE IS NOT EQUAL '00'                              00340000
+              DISPLAY '* ERROR EN OPEN CLIENTE = ' FS-CLIENTE           00350000
+              MOVE 9999 TO RETURN-CODE                                  00360000
+              SET  WS-STATUS-FIN TO TRUE                                00370000
+           END-IF                                                       00380000
+                                                                        00390000
+           IF WS-STATUS-CONT                                            00391000
+              PERFORM 2500-LEER     THRU F-2500-LEER                    00400000
+           END-IF                                                       00420000
+                                                                        00421000
+           IF WS-STATUS-FIN                                             00421000
+              DISPLAY 'EL ARCHIVO ESTA VACIO'                           00421000
+           ELSE                                                         00421000
+      *GUARDAR EL CAMPO DEL CORTE ACTUAL (VIENE DE LA COPY)
+              MOVE WS-DATO-EST-CIV TO WS-EST-CIV-ANT                    00421000
+      *       SI HAY QUE HACER CUALQUIER TIPO DE IMPRESION/DISPLAY
+      *       EN LA PRIMERA VUELTA ES ACA
+              PERFORM 2700-MOSTRAR-EST-CIV
+                  THRU F-2700-MOSTRAR-EST-CIV
+            END-IF                                                      00422000
+            .                                                           00422000
+                                                                        00422000
+       F-1000-INICIO.   EXIT.                                           00430000
+                                                                        00440000
+      **************************************                            00450000
+      *                                    *                            00460000
+      *  CUERPO PRINCIPAL DE PROCESOS      *                            00470000
+      *                                    *                            00480000
+      **************************************                            00490000
+       2000-PROCESO.                                                    00500000
+      *SI EL CAMPO DEL CORTE ACTUAL ES IGUAL AL ANTERIOR                00510000
+           IF WS-DATO-EST-CIV = WS-EST-CIV-ANT                          00620000
+              ADD 1  TO WS-PARCIALES-CORTE                              00421000
+           ELSE                                                         00620000
+              PERFORM 2600-CORTE-EST-CIV THRU F-2600-CORTE-EST-CIV      00620000
+           END-IF                                                       00620000
+
+           ADD WS-DATO-PATRIM TO WS-PARCIALES-PATRIM
+           ADD WS-DATO-DEUDOR TO WS-PARCIALES-DEUDOR
+                                                                        00620000
+           PERFORM 2500-LEER     THRU F-2500-LEER                       00610000
+           .                                                            00620000
+                                                                        00620000
+       F-2000-PROCESO. EXIT.                                            00630000
+                                                                        00640000
+      **************************************                            00650000
+      *  LEER REGISTROS                    *                            00660000
+      **************************************                            00670000
+       2500-LEER.                                                       00680000
+      *CAMBIAR EL INTO POR EL 01 DE LA COPY                             00680000
+           READ CLIENTE   INTO  WS-REG-DATOS                            00690000
+                                                                        00700000
+           EVALUATE FS-CLIENTE                                          00710000
+              WHEN '00'                                                 00720000
+                  ADD 1 TO WS-CANT-LEIDOS                               00730000
+              WHEN '10'                                                 00740000
+                  IF WS-CANT-LEIDOS > 0
+                    SET WS-STATUS-FIN TO TRUE                           00750000
+                    PERFORM 2600-CORTE-EST-CIV                          00620000
+                       THRU F-2600-CORTE-EST-CIV
+                  END-IF
+              WHEN OTHER                                                00770000
+                  DISPLAY '* ERROR EN LECTURA CLIENTE  = ' FS-CLIENTE   00780000
+                  MOVE 9999 TO RETURN-CODE                              00790000
+                  SET WS-STATUS-FIN TO TRUE                             00800000
+           END-EVALUATE                                                 00820000
+           .                                                            00830000
+                                                                        00830000
+       F-2500-LEER. EXIT.                                               00840000
+
+      *CAMBIAR NOMBRE POR CONSIDERANDO EL CAMPO ELEGIDO PARA EL CORTE   00830000
+       2600-CORTE-EST-CIV.                                              00840000
+      *MOSTRAR LAS COSAS QUE SEAN REQUERIDAS PARA EL CORTE
+           MOVE WS-PARCIALES-PATRIM TO WS-MASC-SALDO
+           DISPLAY '   PATRIMONIO EN $: ' WS-MASC-SALDO
+           ADD WS-PARCIALES-PATRIM TO WS-TOTALES-PATRIM
+
+           MOVE WS-PARCIALES-DEUDOR TO WS-MASC-SALDO
+           DISPLAY '   DEUDA EN $:      ' WS-MASC-SALDO
+           ADD WS-PARCIALES-DEUDOR TO WS-TOTALES-DEUDOR
+
+           MOVE WS-PARCIALES-CORTE TO WS-MASC-NUM-3
+           DISPLAY 'TOTAL LEIDOS: ' WS-MASC-NUM-3
+
+           DISPLAY ' '
+
+           PERFORM 2700-MOSTRAR-EST-CIV
+              THRU F-2700-MOSTRAR-EST-CIV
+
+           MOVE WS-DATO-EST-CIV TO WS-EST-CIV-ANT                       00421000
+
+           MOVE 1 TO WS-PARCIALES-CORTE
+
+           INITIALIZE WS-PARCIALES-PATRIM
+           INITIALIZE WS-PARCIALES-DEUDOR
+           .
+
+       F-2600-CORTE-EST-CIV. EXIT.                                      00840000
+                                                                        00850000
+       2700-MOSTRAR-EST-CIV.
+           IF WS-STATUS-FIN
+              NEXT SENTENCE
+           ELSE
+              EVALUATE WS-DATO-EST-CIV
+                 WHEN 'SOLTERO   '
+                    DISPLAY 'SOLTERO'
+                 WHEN 'VIUDO     '
+                    DISPLAY 'VIUDO'
+                 WHEN 'DIVORCIADO'
+                    DISPLAY 'DIVORCIADO'
+                 WHEN 'CASADO    '
+                    DISPLAY 'CASADO'
+                 WHEN 'JURIDICA'
+                    DISPLAY 'JURIDICA'
+                 WHEN OTHER
+                    DISPLAY 'ESTADO CIVIL NO VALIDO'
+              END-EVALUATE
+           END-IF.
+       F-2700-MOSTRAR-EST-CIV. EXIT.
+
+      **************************************                            00930000
+      *                                    *                            00940000
+      *  CUERPO FINAL CIERRE DE FILES      *                            00950000
+      *                                    *                            00960000
+      **************************************                            00970000
+       9999-FINAL.                                                      00980000
+      *                                                                 00990000
+           IF RETURN-CODE = 9999                                        00990000
+              NEXT SENTENCE                                             00990000
+           ELSE                                                         00990000
+                                                                        00990000
+              CLOSE CLIENTE                                             01000000
+                IF FS-CLIENTE IS NOT EQUAL '00'                         01010000
+                    DISPLAY '* ERROR EN CLOSE CLIENTE = '               01020000
+                                            FS-CLIENTE                  01030000
+                    MOVE 9999 TO RETURN-CODE                            01040000
+                    SET WS-STATUS-FIN TO TRUE                           01050000
+                END-IF                                                  01060000
+                                                                        01080000
+      **************************************                            01090000
+      *   MOSTRAR TOTALES DE CONTROL                                    01100000
+      **************************************                            01110000
+                                                                        01110000
+              IF RETURN-CODE = 9999                                     00990000
+                NEXT SENTENCE                                           00990000
+              ELSE                                                      00990000
+                IF WS-CANT-LEIDOS > 0
+                  DISPLAY '                           '                 01130000
+                  DISPLAY 'TOTALES GENERALES'
+
+                  MOVE WS-TOTALES-PATRIM TO WS-MASC-SALDO
+                  DISPLAY '   PATRIMONIO EN $: ' WS-MASC-SALDO
+
+                  MOVE WS-TOTALES-DEUDOR TO WS-MASC-SALDO
+                  DISPLAY '   DEUDA EN $:      ' WS-MASC-SALDO
+
+                  MOVE WS-CANT-LEIDOS TO  WS-MASC-NUM-3                 01140000
+
+                  DISPLAY 'CANTIDAD REGISTROS LEIDOS: '   WS-MASC-NUM-3 01150000
+                END-IF                                                  01160000
+              END-IF                                                    01160000
+           END-IF                                                       01160000
+           .                                                            01160000
+                                                                        01160000
+       F-9999-FINAL.                                                    01210000
+           EXIT.                                                        01220000
+      *                                                                 01230000

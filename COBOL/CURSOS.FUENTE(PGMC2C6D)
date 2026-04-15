@@ -1,0 +1,653 @@
+       IDENTIFICATION DIVISION.                                         00002000
+      *                                                        *        00003000
+       PROGRAM-ID. PGMV2C6D.                                            00004012
+      **********************************************************        00005000
+      *                                                        *        00006000
+      *  PROGRAMA PARA SQL EMBEBIDO                            *        00007000
+      *                                                        *        00016500
+      **********************************************************        00016800
+      *      MANTENIMIENTO DE PROGRAMA                         *        00016900
+      **********************************************************        00017000
+      *  FECHA   *    DETALLE        * COD *                            00018000
+      **************************************                            00019000
+      *          *                   *     *                            00019100
+      *          *                   *     *                            00019200
+      **************************************                            00019300
+       ENVIRONMENT DIVISION.                                            00019400
+       CONFIGURATION SECTION.                                           00019500
+       SPECIAL-NAMES.                                                   00019600
+           DECIMAL-POINT IS COMMA.                                      00019700
+                                                                        00019800
+       INPUT-OUTPUT SECTION.                                            00019900
+       FILE-CONTROL.                                                    00020000
+                                                                        00020600
+             SELECT SALIDA  ASSIGN DDSALE                               00021000
+             FILE STATUS IS WS-CODE-SAL.                                00022300
+                                                                        00022407
+       DATA DIVISION.                                                   00022900
+       FILE SECTION.                                                    00023000
+       FD SALIDA                                                        00040100
+             BLOCK CONTAINS 0 RECORDS                                   00040200
+             RECORDING MODE IS F.                                       00040300
+                                                                        00040400
+       01 REG-SALIDA      PIC X(132).                                   00040504
+                                                                        00040607
+      **************************************                            00041300
+       WORKING-STORAGE SECTION.                                         00041400
+      **************************************                            00041500
+       77  FILLER        PIC X(26) VALUE '* INICIO WORKING-STORAGE *'.  00041600
+                                                                        00041700
+       77  WS-CODE-SAL      PIC XX    VALUE SPACES.                     00041800
+                                                                        00042507
+       01  WS-FLAG-FIN      PIC X.                                      00042607
+           88  WS-SI-PROCESO      VALUE ' '.                            00042707
+           88  WS-FIN-PROCESO     VALUE 'F'.                            00042807
+                                                                        00042913
+       01  WS-FLAG2-FIN      PIC X.                                     00043013
+            88  WS-SI-LECTURA      VALUE ' '.                           00043113
+            88  WS-FIN-LECTURA     VALUE 'F'.                           00043213
+                                                                        00043307
+       01  WS-LEYENDO        PIC XXX VALUE SPACES.                      00043412
+                                                                        00043512
+       77  WS-MSJ-ERR-CLI-DUP PIC X(17) VALUE                           00043612
+                           'CLIENTE DUPLICADO'.                         00044012
+                                                                        00046809
+       77  WS-MSJ-ERR-CTA-DUP PIC X(16) VALUE                           00046912
+                           'CUENTA DUPLICADA'.                          00047012
+                                                                        00047112
+       77  WS-MSJ-ERR-CTA-SINCLI PIC X(18) VALUE                        00047212
+                           'CUENTA SIN CLIENTE'.                        00047312
+                                                                        00048012
+       77  WS-MSJ-ERR-CLI-SINCTA PIC X(19) VALUE                        00049012
+                           'CLIENTE SIN CUENTAS'.                       00049112
+                                                                        00049212
+       77  WS-MSJ-ERR-SAL-INV PIC X(14) VALUE                           00049312
+                           'SALDO NEGATIVO'.                            00049412
+                                                                        00049512
+       77  WS-TOT-CLI-LEIDOS       PIC 999   VALUE ZEROS.               00049612
+       77  WS-TOT-CLI-GRABADOS     PIC 999   VALUE ZEROS.               00049712
+       77  WS-TOT-CLI-DUP          PIC 999   VALUE ZEROS.               00049812
+                                                                        00049914
+       01  WS-CLI-DUP-NROCLI       PIC 999   VALUE ZEROS.               00050014
+                                                                        00050114
+       77  WS-TOT-CLI-SIN-CTA      PIC 999   VALUE ZEROS.               00050212
+                                                                        00050312
+       77  WS-TOT-CTA-LEIDOS       PIC 999   VALUE ZEROS.               00050412
+       77  WS-TOT-CTA-GRABADOS     PIC 999   VALUE ZEROS.               00050512
+       77  WS-TOT-CTA-DUP          PIC 999   VALUE ZEROS.               00050612
+       77  WS-TOT-CTA-SIN-CLI      PIC 999   VALUE ZEROS.               00050712
+       77  WS-TOT-SALDO-INV        PIC 999   VALUE ZEROS.               00050812
+                                                                        00050914
+       01  WS-KEY-CTA-DUP.                                              00051014
+           03 WS-KEY-CTA-DUP-TIPCUEN PIC XX    VALUE SPACES.            00051114
+           03 WS-KEY-CTA-DUP-NROCUEN PIC 9(05) VALUE ZEROS.             00051214
+           03 WS-KEY-CTA-DUP-SUCUEN  PIC 99    VALUE ZEROS.             00051314
+                                                                        00051512
+       77  WS-MAX-LINEAS       PIC 99    VALUE 12.                      00051612
+       77  WS-CUENTA-LINEA     PIC 99    VALUE ZEROS.                   00051712
+       77  WS-CUENTA-PAGINA    PIC 99    VALUE ZEROS.                   00051812
+                                                                        00051912
+       01 WS-FECHA-SISTEMA.                                             00052012
+          03 WS-FECHA-SISTEMA-ANIO PIC 9(4)     VALUE ZEROS.            00052112
+          03 WS-FECHA-SISTEMA-MES  PIC 99       VALUE ZEROS.            00052212
+          03 WS-FECHA-SISTEMA-DIA  PIC 99       VALUE ZEROS.            00052312
+                                                                        00052412
+       01 WS-TITULO.                                                    00052509
+          03  FILLER               PIC X(49)    VALUE                   00052612
+           'CONTROL DE INTEGRIDAD CLIENTES / CUENTAS  FECHA: '.         00052712
+          03  WS-TITULO-FECHA.                                          00052809
+              05 WS-TITULO-DIA     PIC Z9       VALUE ZEROS.            00052909
+              05 FILLER            PIC X        VALUE '-'.              00053011
+              05 WS-TITULO-MES     PIC 99       VALUE ZEROS.            00053109
+              05 FILLER            PIC X        VALUE '-'.              00053211
+              05 WS-TITULO-ANIO    PIC 9(4)     VALUE ZEROS.            00053309
+          03  WS-PAGINA.                                                00053409
+              05 FILLER            PIC X(05)    VALUE ' PAG '.          00053511
+              05 WS-NRO-PAGINA     PIC 99       VALUE ZEROS.            00053609
+                                                                        00055609
+       01 WS-SUBTITULO.                                                 00055709
+          03  FILLER               PIC X(14)    VALUE                   00055812
+                                                      'TIPO REGISTRO|'. 00055912
+          03  FILLER               PIC X(12)    VALUE                   00056012
+                                                        'TIPO CUENTA|'. 00056112
+          03  FILLER               PIC X(09)    VALUE                   00056212
+                                                           'SUCURSAL|'. 00056312
+          03  FILLER               PIC X(11)    VALUE                   00056412
+                                                         'NRO CUENTA|'. 00056512
+          03  FILLER               PIC X(12)    VALUE                   00056612
+                                                        'NRO CLIENTE|'. 00056712
+          03  FILLER               PIC X(31)    VALUE                   00056812
+                                     '       NOMBRE Y APELLIDO      |'. 00056912
+          03  FILLER               PIC X(11)    VALUE                   00057012
+                                                         '  SALDO   |'. 00057112
+          03  FILLER               PIC X(32)    VALUE                   00057412
+                                    '     DESCRIPCION DEL ERROR      '. 00057512
+                                                                        00057612
+       01 WS-REG-SALIDA-CLI.                                            00057713
+          03  WS-REG-S-I-TIP-REG     PIC X(07)    VALUE SPACES.         00057813
+          03  FILLER               PIC X(07)    VALUE        '      |'. 00058112
+          03  FILLER               PIC X(12)    VALUE   '-----------|'. 00059013
+          03  FILLER               PIC X(09)    VALUE      '--------|'. 00059113
+          03  FILLER               PIC X(11)    VALUE    '----------|'. 00062113
+          03  FILLER               PIC X(08)    VALUE SPACES.           00062412
+          03  WS-REG-S-I-NROCLI      PIC Z(03)    VALUE ZEROS.          00062513
+          03  FILLER               PIC X        VALUE              '|'. 00062612
+          03  WS-REG-S-I-NOMAPE      PIC X(30)    VALUE SPACES.         00062813
+          03  FILLER               PIC X        VALUE              '|'. 00062912
+          03  FILLER               PIC X(11)    VALUE    '----------|'. 00063213
+          03  WS-REG-S-I-DESC-ERR    PIC X(32)    VALUE SPACES.         00063513
+                                                                        00063612
+       01 WS-REG-SALIDA-CTA.                                            00063713
+          03  WS-REG-S-A-TIP-REG     PIC X(07)    VALUE SPACES.         00063813
+          03  FILLER               PIC X(07)    VALUE        '      |'. 00063913
+          03  WS-REG-S-A-TIPCUEN     PIC XX       VALUE SPACES.         00064013
+          03  FILLER               PIC X(10)    VALUE     '         |'. 00064113
+          03  FILLER               PIC X(06)    VALUE SPACES.           00064213
+          03  WS-REG-S-A-SUCUEN      PIC ZZ       VALUE ZEROS.          00064313
+          03  FILLER               PIC X(01)    VALUE              '|'. 00064413
+          03  FILLER               PIC X(05)    VALUE SPACES.           00064513
+          03  WS-REG-S-A-NROCUEN     PIC Z(05)    VALUE ZEROS.          00064613
+          03  FILLER               PIC X        VALUE              '|'. 00064713
+          03  FILLER               PIC X(08)    VALUE SPACES.           00064813
+          03  WS-REG-S-A-NROCLI      PIC Z(03)    VALUE ZEROS.          00064913
+          03  FILLER               PIC X        VALUE              '|'. 00065013
+          03  WS-REG-S-A-NOMAPE      PIC X(30)    VALUE SPACES.         00065113
+          03  FILLER               PIC X        VALUE              '|'. 00065213
+          03  WS-REG-S-A-SALDO       PIC -$Z9(04).99 VALUE ZEROS.       00065313
+          03  FILLER               PIC X        VALUE              '|'. 00065413
+          03  WS-REG-S-A-DESC-ERR    PIC X(32)    VALUE SPACES.         00065513
+                                                                        00065613
+       01  WS-NOMBRE-TABLA PIC X(14) VALUE SPACES.                      00065713
+       01  WS-MSJ-ERR      PIC X(32) VALUE SPACES.                      00065813
+                                                                        00065913
+       77  FILLER        PIC X(26) VALUE '* VARIABLES SQL          *'.  00066013
+       77  WS-NOMBRE-SQL PIC X(17) VALUE SPACES.                        00066113
+                                                                        00066213
+       77  WS-SQLCODE    PIC +++999 USAGE DISPLAY VALUE ZEROS.          00066313
+                                                                        00066413
+            EXEC SQL                                                    00066513
+              INCLUDE SQLCA                                             00066613
+            END-EXEC.                                                   00066713
+                                                                        00066813
+            EXEC SQL                                                    00066913
+              INCLUDE TBCURCTA                                          00067013
+            END-EXEC.                                                   00067113
+                                                                        00067213
+            EXEC SQL                                                    00067313
+              INCLUDE TBCURCLI                                          00067413
+            END-EXEC.                                                   00067513
+                                                                        00067613
+            EXEC SQL                                                    00067713
+               DECLARE CUR-CLI-DUP CURSOR FOR                           00067813
+               SELECT NROCLI, NOMAPE                                    00067913
+               FROM KC02803.TBCURCLI                                    00068013
+               WHERE NROCLI IN                                          00068113
+               (                                                        00068213
+                  SELECT NROCLI                                         00068313
+                  FROM KC02803.TBCURCLI                                 00068413
+                  GROUP BY NROCLI                                       00068513
+                  HAVING COUNT(*) > 1                                   00068613
+               )                                                        00068713
+               ORDER BY NROCLI                                          00068813
+            END-EXEC.                                                   00068913
+                                                                        00069013
+            EXEC SQL                                                    00069113
+               DECLARE CUR-CTA-DUP CURSOR FOR                           00069213
+               SELECT TIPCUEN, NROCUEN, SUCUEN, NROCLI, SALDO           00069313
+               FROM KC02803.TBCURCTA                                    00069413
+               WHERE (TIPCUEN, SUCUEN, NROCUEN) IN                      00069513
+               (                                                        00069613
+                  SELECT TIPCUEN, SUCUEN, NROCUEN                       00069713
+                  FROM KC02803.TBCURCTA                                 00069813
+                  GROUP BY TIPCUEN, SUCUEN, NROCUEN                     00069913
+                  HAVING COUNT(*) > 1                                   00070013
+               )                                                        00070113
+               ORDER BY TIPCUEN, SUCUEN, NROCUEN                        00070213
+            END-EXEC.                                                   00070313
+                                                                        00070413
+            EXEC SQL                                                    00070513
+               DECLARE CUR-CTA-SINCLI CURSOR FOR                        00070613
+               SELECT A.TIPCUEN, A.NROCUEN, A.SUCUEN, A.NROCLI, A.SALDO 00070713
+               FROM KC02803.TBCURCTA A                                  00070813
+               LEFT JOIN KC02803.TBCURCLI B                             00070913
+                    ON A.NROCLI = B.NROCLI                              00071013
+               WHERE B.NROCLI IS NULL                                   00071113
+            END-EXEC.                                                   00071213
+                                                                        00071313
+            EXEC SQL                                                    00071413
+               DECLARE CUR-CLI-SINCTA CURSOR FOR                        00071513
+               SELECT DISTINCT A.NROCLI, A.NOMAPE                       00071614
+               FROM KC02803.TBCURCLI A                                  00071713
+               LEFT JOIN KC02803.TBCURCTA B                             00071814
+                    ON A.NROCLI = B.NROCLI                              00071914
+               WHERE B.NROCLI IS NULL                                   00072014
+            END-EXEC.                                                   00072114
+                                                                        00072214
+            EXEC SQL                                                    00073413
+               DECLARE CUR-SALDO-INV CURSOR FOR                         00073513
+               SELECT TIPCUEN, NROCUEN, SUCUEN, NROCLI, SALDO           00073613
+               FROM KC02803.TBCURCTA                                    00073713
+               WHERE SALDO < 0                                          00073813
+               ORDER BY TIPCUEN, NROCUEN                                00073913
+            END-EXEC.                                                   00074013
+                                                                        00074113
+       77  FILLER        PIC X(26) VALUE '* FINAL  WORKING-STORAGE *'.  00074213
+                                                                        00074313
+      ***************************************************************.  00074413
+       PROCEDURE DIVISION.                                              00074513
+      **************************************                            00074613
+      *                                    *                            00074713
+      *  CUERPO PRINCIPAL DEL PROGRAMA     *                            00074813
+      *                                    *                            00074913
+      **************************************                            00075013
+       MAIN-PROGRAM.                                                    00075113
+                                                                        00075213
+           PERFORM 1000-I-INICIO                                        00075313
+              THRU F-1000-INICIO.                                       00075413
+                                                                        00075513
+           PERFORM 2000-PROCESO    THRU                                 00075613
+                   F-2000-PROCESO        UNTIL WS-FIN-PROCESO.          00075713
+                                                                        00075813
+           PERFORM 9999-FINAL      THRU                                 00075913
+                   F-9999-FINAL.                                        00076013
+       F-MAIN-PROGRAM. GOBACK.                                          00076113
+                                                                        00076213
+      **************************************                            00076313
+      *                                    *                            00076413
+      *  CUERPO INICIO APERTURA ARCHIVOS   *                            00076513
+      *                                    *                            00076613
+      **************************************                            00076713
+       1000-I-INICIO.                                                   00076813
+           ACCEPT WS-FECHA-SISTEMA FROM DATE YYYYMMDD.                  00076913
+                                                                        00077013
+           MOVE WS-FECHA-SISTEMA-ANIO TO WS-TITULO-ANIO.                00077113
+           MOVE WS-FECHA-SISTEMA-MES  TO WS-TITULO-MES.                 00077213
+           MOVE WS-FECHA-SISTEMA-DIA  TO WS-TITULO-DIA.                 00077313
+                                                                        00077413
+           MOVE WS-MAX-LINEAS TO WS-CUENTA-LINEA                        00077513
+           SUBTRACT 1 FROM WS-MAX-LINEAS                                00077613
+                                                                        00077713
+           SET WS-SI-PROCESO  TO TRUE.                                  00077813
+                                                                        00077913
+           OPEN OUTPUT SALIDA.                                          00078013
+           IF WS-CODE-SAL    IS NOT EQUAL '00'                          00078113
+              DISPLAY '* ERROR EN OPEN SALIDA  = ' WS-CODE-SAL          00078213
+              MOVE 9999 TO RETURN-CODE                                  00078313
+              SET  WS-FIN-PROCESO TO TRUE                               00078413
+           END-IF.                                                      00078513
+                                                                        00078613
+           IF WS-SI-PROCESO                                             00078713
+               EXEC SQL                                                 00078813
+                 OPEN CUR-CLI-DUP                                       00078913
+               END-EXEC                                                 00079013
+              MOVE 'O CUR-CLI-DUP    ' TO WS-NOMBRE-SQL                 00079113
+              PERFORM 10000-EVAL-SQL-CODE                               00079213
+                 THRU F-10000-EVAL-SQL-CODE                             00079313
+           END-IF                                                       00079413
+                                                                        00079513
+           IF WS-SI-PROCESO                                             00079613
+               EXEC SQL                                                 00079713
+                 OPEN CUR-CTA-DUP                                       00079813
+               END-EXEC                                                 00079913
+              MOVE 'O CUR-CTA-DUP    ' TO WS-NOMBRE-SQL                 00080013
+              PERFORM 10000-EVAL-SQL-CODE                               00080113
+                 THRU F-10000-EVAL-SQL-CODE                             00080213
+           END-IF                                                       00080313
+                                                                        00080413
+           IF WS-SI-PROCESO                                             00080513
+               EXEC SQL                                                 00080613
+                 OPEN CUR-CTA-SINCLI                                    00080713
+               END-EXEC                                                 00080813
+              MOVE 'O CUR-CTA-SINCLI ' TO WS-NOMBRE-SQL                 00080913
+              PERFORM 10000-EVAL-SQL-CODE                               00081013
+                 THRU F-10000-EVAL-SQL-CODE                             00081113
+           END-IF                                                       00081213
+                                                                        00081313
+           IF WS-SI-PROCESO                                             00081413
+               EXEC SQL                                                 00081513
+                 OPEN CUR-CLI-SINCTA                                    00081613
+               END-EXEC                                                 00081713
+              MOVE 'O CUR-CLI-SINCTA ' TO WS-NOMBRE-SQL                 00081813
+              PERFORM 10000-EVAL-SQL-CODE                               00081913
+                 THRU F-10000-EVAL-SQL-CODE                             00082013
+           END-IF                                                       00082113
+                                                                        00082213
+           IF WS-SI-PROCESO                                             00082313
+               EXEC SQL                                                 00082413
+                 OPEN CUR-SALDO-INV                                     00082513
+               END-EXEC                                                 00082613
+              MOVE 'O CUR-SALDO-INV  ' TO WS-NOMBRE-SQL                 00082713
+              PERFORM 10000-EVAL-SQL-CODE                               00082813
+                 THRU F-10000-EVAL-SQL-CODE                             00082913
+           END-IF.                                                      00083013
+                                                                        00083113
+       F-1000-INICIO.   EXIT.                                           00083213
+                                                                        00083313
+      **************************************                            00083413
+      *                                    *                            00083513
+      *  CUERPO PRINCIPAL DEL PROGRAMA     *                            00083613
+      *                                    *                            00083713
+      **************************************                            00084013
+       2000-PROCESO.                                                    00090012
+           MOVE 'CUR-CLI-DUP' TO WS-NOMBRE-TABLA                        00091212
+           MOVE WS-MSJ-ERR-CLI-DUP TO WS-MSJ-ERR                        00091312
+           SET WS-SI-LECTURA TO TRUE                                    00091413
+                                                                        00091512
+           PERFORM 2100-LECTURA-CUR-CLI-DUP                             00092012
+              THRU F-2100-LECTURA-CUR-CLI-DUP UNTIL WS-FIN-LECTURA      00093013
+                                                                        00097012
+           MOVE 'CUR-CTA-DUP' TO WS-NOMBRE-TABLA                        00097312
+           MOVE WS-MSJ-ERR-CTA-DUP TO WS-MSJ-ERR                        00097412
+           SET WS-SI-LECTURA TO TRUE                                    00097513
+                                                                        00097612
+           PERFORM 2200-LECTURA-CUR-CTA-DUP                             00097712
+              THRU F-2200-LECTURA-CUR-CTA-DUP UNTIL WS-FIN-LECTURA      00097813
+                                                                        00097912
+           MOVE 'CUR-CTA-SINCLI' TO WS-NOMBRE-TABLA                     00098112
+           MOVE WS-MSJ-ERR-CTA-SINCLI TO WS-MSJ-ERR                     00098212
+           SET WS-SI-LECTURA TO TRUE                                    00098313
+                                                                        00098412
+           PERFORM 2300-LECTURA-CUR-CTA-SINCLI                          00098512
+              THRU F-2300-LECTURA-CUR-CTA-SINCLI UNTIL WS-FIN-LECTURA   00098613
+                                                                        00098712
+           MOVE 'CUR-CLI-SINCTA' TO WS-NOMBRE-TABLA                     00098912
+           MOVE WS-MSJ-ERR-CLI-SINCTA TO WS-MSJ-ERR                     00099012
+           SET WS-SI-LECTURA TO TRUE                                    00099113
+                                                                        00099212
+           PERFORM 2400-LECTURA-CUR-CLI-SINCTA                          00099312
+              THRU F-2400-LECTURA-CUR-CLI-SINCTA UNTIL WS-FIN-LECTURA   00099413
+                                                                        00099512
+           MOVE 'CUR-SALDO-INV' TO WS-NOMBRE-TABLA                      00099712
+           MOVE WS-MSJ-ERR-SAL-INV TO WS-MSJ-ERR                        00099812
+           SET WS-SI-LECTURA TO TRUE                                    00099913
+                                                                        00100012
+           PERFORM 2500-LECTURA-CUR-SALDO-INV                           00100112
+              THRU F-2500-LECTURA-CUR-SALDO-INV UNTIL WS-FIN-LECTURA    00100213
+                                                                        00100313
+           SET WS-FIN-PROCESO TO TRUE.                                  00100413
+       F-2000-PROCESO. EXIT.                                            00100512
+                                                                        00100612
+       2100-LECTURA-CUR-CLI-DUP.                                        00100712
+            EXEC SQL                                                    00100812
+              FETCH CUR-CLI-DUP                                         00100912
+              INTO :WT-NROCLI,                                          00101012
+                   :WT-NOMAPE                                           00101112
+            END-EXEC.                                                   00101212
+           PERFORM 2998-EVALUATE-SQL-CLI                                00101312
+              THRU F-2998-EVALUATE-SQL-CLI.                             00101412
+       F-2100-LECTURA-CUR-CLI-DUP. EXIT.                                00104912
+                                                                        00108812
+       2200-LECTURA-CUR-CTA-DUP.                                        00108912
+            EXEC SQL                                                    00109012
+              FETCH CUR-CTA-DUP                                         00109112
+              INTO :WS-TIPCUEN,                                         00109212
+                   :WS-NROCUEN,                                         00109312
+                   :WS-SUCUEN,                                          00109412
+                   :WS-NROCLI,                                          00109712
+                   :WS-SALDO                                            00109812
+            END-EXEC.                                                   00109912
+           PERFORM 2999-EVALUATE-SQL-CTA                                00110012
+              THRU F-2999-EVALUATE-SQL-CTA.                             00111012
+       F-2200-LECTURA-CUR-CTA-DUP. EXIT.                                00114512
+                                                                        00114612
+       2300-LECTURA-CUR-CTA-SINCLI.                                     00114712
+            EXEC SQL                                                    00114812
+              FETCH CUR-CTA-SINCLI                                      00114912
+              INTO :WS-TIPCUEN,                                         00115012
+                   :WS-NROCUEN,                                         00115112
+                   :WS-SUCUEN,                                          00115212
+                   :WS-NROCLI,                                          00115312
+                   :WS-SALDO                                            00115412
+            END-EXEC.                                                   00115512
+           PERFORM 2999-EVALUATE-SQL-CTA                                00115612
+              THRU F-2999-EVALUATE-SQL-CTA.                             00115712
+       F-2300-LECTURA-CUR-CTA-SINCLI. EXIT.                             00115812
+                                                                        00115912
+       2400-LECTURA-CUR-CLI-SINCTA.                                     00116012
+            EXEC SQL                                                    00116112
+              FETCH CUR-CLI-SINCTA                                      00116212
+              INTO :WT-NROCLI,                                          00116312
+                   :WT-NOMAPE                                           00116412
+            END-EXEC.                                                   00116512
+           PERFORM 2998-EVALUATE-SQL-CLI                                00116612
+              THRU F-2998-EVALUATE-SQL-CLI.                             00116712
+       F-2400-LECTURA-CUR-CLI-SINCTA. EXIT.                             00116812
+                                                                        00116912
+       2500-LECTURA-CUR-SALDO-INV.                                      00117012
+            EXEC SQL                                                    00117112
+              FETCH CUR-SALDO-INV                                       00117212
+              INTO :WS-TIPCUEN,                                         00117312
+                   :WS-NROCUEN,                                         00117412
+                   :WS-SUCUEN,                                          00117512
+                   :WS-NROCLI,                                          00117612
+                   :WS-SALDO                                            00117712
+            END-EXEC.                                                   00117812
+           PERFORM 2999-EVALUATE-SQL-CTA                                00117912
+              THRU F-2999-EVALUATE-SQL-CTA.                             00118012
+       F-2500-LECTURA-CUR-SALDO-INV. EXIT.                              00118112
+                                                                        00118212
+       2998-EVALUATE-SQL-CLI.                                           00118312
+           EVALUATE TRUE                                                00118412
+             WHEN SQLCODE EQUAL ZEROS                                   00118512
+                ADD 1 TO WS-TOT-CLI-LEIDOS                              00118612
+                                                                        00118712
+                EVALUATE WS-NOMBRE-TABLA                                00118812
+                   WHEN 'CUR-CLI-DUP'                                   00118912
+                      IF WS-CLI-DUP-NROCLI = WT-NROCLI                  00119014
+                         ADD 1 TO WS-TOT-CLI-DUP                        00119114
+                                                                        00119214
+                         PERFORM 3000-GRABAR-CLI                        00119314
+                            THRU F-3000-GRABAR-CLI                      00119414
+                      ELSE                                              00119514
+                         MOVE WT-NROCLI TO WS-CLI-DUP-NROCLI            00119614
+                      END-IF                                            00119714
+                   WHEN 'CUR-CLI-SINCTA'                                00119812
+                      ADD 1 TO WS-TOT-CLI-SIN-CTA                       00119912
+                                                                        00120014
+                      PERFORM 3000-GRABAR-CLI                           00120114
+                         THRU F-3000-GRABAR-CLI                         00120214
+                END-EVALUATE                                            00120312
+                                                                        00120412
+                                                                        00121012
+             WHEN SQLCODE EQUAL 100                                     00121413
+                SET WS-FIN-LECTURA TO TRUE                              00121513
+             WHEN OTHER                                                 00121613
+                MOVE SQLCODE TO WS-SQLCODE                              00121712
+                DISPLAY 'ERROR FETCH ' WS-NOMBRE-TABLA ': ' WS-SQLCODE  00121812
+                SET WS-FIN-PROCESO TO TRUE                              00121912
+           END-EVALUATE.                                                00122012
+       F-2998-EVALUATE-SQL-CLI. EXIT.                                   00122112
+                                                                        00122212
+       2999-EVALUATE-SQL-CTA.                                           00122312
+           EVALUATE TRUE                                                00122412
+             WHEN SQLCODE EQUAL ZEROS                                   00122512
+                ADD 1 TO WS-TOT-CTA-LEIDOS                              00122612
+                                                                        00122712
+                EVALUATE WS-NOMBRE-TABLA                                00122812
+                   WHEN 'CUR-CTA-DUP'                                   00122912
+                      IF WS-KEY-CTA-DUP-TIPCUEN = WS-TIPCUEN            00123014
+                       AND WS-KEY-CTA-DUP-NROCUEN = WS-NROCUEN          00123114
+                       AND WS-KEY-CTA-DUP-SUCUEN = WS-SUCUEN            00123214
+                         ADD 1 TO WS-TOT-CTA-DUP                        00123314
+                                                                        00123414
+                         PERFORM 3010-GRABAR-CTA                        00123514
+                            THRU F-3010-GRABAR-CTA                      00123614
+                      ELSE                                              00123714
+                         MOVE WS-TIPCUEN TO WS-KEY-CTA-DUP-TIPCUEN      00123814
+                         MOVE WS-NROCUEN TO WS-KEY-CTA-DUP-NROCUEN      00123914
+                         MOVE WS-SUCUEN  TO WS-KEY-CTA-DUP-SUCUEN       00124014
+                      END-IF                                            00124114
+                   WHEN 'CUR-CTA-SINCLI'                                00124214
+                      ADD 1 TO WS-TOT-CTA-SIN-CLI                       00124314
+                                                                        00124414
+                      PERFORM 3010-GRABAR-CTA                           00124514
+                         THRU F-3010-GRABAR-CTA                         00124614
+                   WHEN 'CUR-SALDO-INV'                                 00124714
+                      ADD 1 TO WS-TOT-SALDO-INV                         00124814
+                                                                        00124914
+                      PERFORM 3010-GRABAR-CTA                           00125014
+                         THRU F-3010-GRABAR-CTA                         00125114
+                END-EVALUATE                                            00125214
+                                                                        00125312
+                                                                        00125412
+             WHEN SQLCODE EQUAL 100                                     00125513
+                SET WS-FIN-LECTURA TO TRUE                              00125613
+             WHEN OTHER                                                 00125713
+                MOVE SQLCODE TO WS-SQLCODE                              00125812
+                DISPLAY 'ERROR FETCH ' WS-NOMBRE-TABLA ': ' WS-SQLCODE  00125912
+                SET WS-FIN-PROCESO TO TRUE                              00126012
+           END-EVALUATE.                                                00126112
+       F-2999-EVALUATE-SQL-CTA. EXIT.                                   00126212
+                                                                        00126314
+       3000-GRABAR-CLI.                                                 00126414
+           INITIALIZE WS-REG-SALIDA-CLI                                 00126514
+                                                                        00126614
+           MOVE 'CLIENTE'  TO WS-REG-S-I-TIP-REG                        00126714
+           MOVE WT-NROCLI  TO WS-REG-S-I-NROCLI                         00126814
+           MOVE WT-NOMAPE  TO WS-REG-S-I-NOMAPE                         00126914
+           MOVE WS-MSJ-ERR TO WS-REG-S-I-DESC-ERR                       00127014
+                                                                        00127114
+           MOVE 'CLI' TO WS-LEYENDO                                     00127214
+                                                                        00127314
+           PERFORM 3050-GRABAR            THRU                          00127414
+                   F-3050-GRABAR.                                       00127514
+       F-3000-GRABAR-CLI. EXIT.                                         00127614
+                                                                        00127714
+       3010-GRABAR-CTA.                                                 00127814
+           INITIALIZE WS-REG-SALIDA-CTA                                 00127914
+                                                                        00128014
+           MOVE 'CUENTA '  TO WS-REG-S-A-TIP-REG                        00128114
+           MOVE WS-TIPCUEN TO WS-REG-S-A-TIPCUEN                        00128214
+           MOVE WS-SUCUEN  TO WS-REG-S-A-SUCUEN                         00128314
+           MOVE WS-NROCUEN TO WS-REG-S-A-NROCUEN                        00128414
+           MOVE WS-NROCLI  TO WS-REG-S-A-NROCLI                         00128514
+           MOVE ALL '-'    TO WS-REG-S-A-NOMAPE                         00128614
+           MOVE WS-SALDO   TO WS-REG-S-A-SALDO                          00128714
+           MOVE WS-MSJ-ERR TO WS-REG-S-A-DESC-ERR                       00128814
+                                                                        00128914
+           MOVE 'CTA' TO WS-LEYENDO                                     00129014
+                                                                        00129114
+           PERFORM 3050-GRABAR            THRU                          00129214
+                   F-3050-GRABAR.                                       00129314
+       F-3010-GRABAR-CTA. EXIT.                                         00129414
+                                                                        00129512
+       3050-GRABAR.                                                     00129614
+           IF WS-CUENTA-LINEA GREATER WS-MAX-LINEAS                     00129713
+              PERFORM 3100-IMPRIMIR-TITULOS                             00129812
+               THRU F-3100-IMPRIMIR-TITULOS                             00129912
+           END-IF                                                       00130012
+                                                                        00130112
+           IF WS-LEYENDO = 'CTA'                                        00130213
+              WRITE REG-SALIDA     FROM WS-REG-SALIDA-CTA               00130313
+           ELSE                                                         00130413
+              WRITE REG-SALIDA     FROM WS-REG-SALIDA-CLI               00130513
+           END-IF                                                       00130613
+                                                                        00130712
+           PERFORM 9000-EVAL-CODE-SALIDA                                00130812
+            THRU F-9000-EVAL-CODE-SALIDA.                               00130912
+                                                                        00131012
+           IF WS-LEYENDO = 'CTA'                                        00131112
+              ADD 1 TO  WS-TOT-CTA-GRABADOS                             00131214
+           ELSE                                                         00131312
+              ADD 1 TO  WS-TOT-CLI-GRABADOS                             00131414
+           END-IF                                                       00131512
+                                                                        00131612
+           ADD 1 TO  WS-CUENTA-LINEA.                                   00131714
+       F-3050-GRABAR. EXIT.                                             00131914
+                                                                        00132012
+       3100-IMPRIMIR-TITULOS.                                           00132112
+           MOVE 2     TO WS-CUENTA-LINEA                                00133012
+           ADD  1     TO WS-CUENTA-PAGINA                               00140012
+           MOVE WS-CUENTA-PAGINA      TO WS-NRO-PAGINA                  00150012
+                                                                        00150112
+           WRITE   REG-SALIDA    FROM WS-TITULO   AFTER PAGE.           00150212
+           PERFORM 9000-EVAL-CODE-SALIDA                                00150312
+              THRU F-9000-EVAL-CODE-SALIDA.                             00150412
+                                                                        00150512
+           WRITE   REG-SALIDA    FROM WS-SUBTITULO                      00150612
+           PERFORM 9000-EVAL-CODE-SALIDA                                00150712
+              THRU F-9000-EVAL-CODE-SALIDA                              00150812
+           .                                                            00150912
+       F-3100-IMPRIMIR-TITULOS. EXIT.                                   00151012
+                                                                        00154109
+       9000-EVAL-CODE-SALIDA.                                           00155709
+           IF WS-CODE-SAL    IS NOT EQUAL '00'                          00155809
+              DISPLAY '* ERROR EN WRITE SALIDA  = ' WS-CODE-SAL         00155909
+              MOVE 9999 TO RETURN-CODE                                  00156009
+              SET  WS-FIN-PROCESO TO TRUE                               00156109
+           END-IF.                                                      00156209
+                                                                        00156309
+       F-9000-EVAL-CODE-SALIDA. EXIT.                                   00156409
+                                                                        00156509
+      **************************************                            00157509
+      *                                    *                            00157609
+      *  CUERPO FINAL CIERRE DE FILES      *                            00157709
+      *                                    *                            00157809
+      **************************************                            00157909
+       9999-FINAL.                                                      00158009
+           IF RETURN-CODE NOT EQUAL 9999                                00158112
+              CLOSE SALIDA                                              00158212
+              IF WS-CODE-SAL    IS NOT EQUAL '00'                       00158312
+                 DISPLAY '* ERROR EN CLOSE SALIDA  = ' WS-CODE-SAL      00158412
+                 MOVE 9999 TO RETURN-CODE                               00158512
+                 SET  WS-FIN-PROCESO TO TRUE                            00158612
+              END-IF                                                    00158712
+               EXEC SQL                                                 00158812
+                 CLOSE CUR-CLI-DUP                                      00158912
+               END-EXEC                                                 00159012
+              MOVE 'C CUR-CLI-DUP    ' TO WS-NOMBRE-SQL                 00159112
+              PERFORM 10000-EVAL-SQL-CODE                               00159212
+                 THRU F-10000-EVAL-SQL-CODE                             00159312
+                                                                        00159412
+               EXEC SQL                                                 00159512
+                 CLOSE CUR-CTA-DUP                                      00159612
+               END-EXEC                                                 00159712
+              MOVE 'C CUR-CTA-DUP    ' TO WS-NOMBRE-SQL                 00159812
+              PERFORM 10000-EVAL-SQL-CODE                               00159912
+                 THRU F-10000-EVAL-SQL-CODE                             00160012
+                                                                        00160112
+               EXEC SQL                                                 00160212
+                 CLOSE CUR-CTA-SINCLI                                   00160312
+               END-EXEC                                                 00160412
+              MOVE 'C CUR-CTA-SINCLI ' TO WS-NOMBRE-SQL                 00160512
+              PERFORM 10000-EVAL-SQL-CODE                               00160612
+                 THRU F-10000-EVAL-SQL-CODE                             00160712
+                                                                        00160812
+               EXEC SQL                                                 00160912
+                 CLOSE CUR-CLI-SINCTA                                   00161012
+               END-EXEC                                                 00161112
+              MOVE 'C CUR-CLI-SINCTA ' TO WS-NOMBRE-SQL                 00161212
+              PERFORM 10000-EVAL-SQL-CODE                               00161312
+                 THRU F-10000-EVAL-SQL-CODE                             00161412
+                                                                        00161512
+               EXEC SQL                                                 00161612
+                 CLOSE CUR-SALDO-INV                                    00161712
+               END-EXEC                                                 00161812
+              MOVE 'C CUR-SALDO-INV  ' TO WS-NOMBRE-SQL                 00161912
+              PERFORM 10000-EVAL-SQL-CODE                               00162012
+                 THRU F-10000-EVAL-SQL-CODE                             00162112
+                                                                        00162213
+            DISPLAY 'CANTIDAD CLIENTES LEIDOS:     ' WS-TOT-CLI-LEIDOS  00162313
+            DISPLAY 'CANTIDAD CLIENTES IMPRESOS:   ' WS-TOT-CLI-GRABADOS00162413
+            DISPLAY 'CANTIDAD CLIENTES DUPLICADOS: ' WS-TOT-CLI-DUP     00162513
+            DISPLAY 'CANTIDAD CLIENTES SIN CUENTA: ' WS-TOT-CLI-SIN-CTA 00162613
+                                                                        00162713
+            DISPLAY 'CANTIDAD CUENTAS LEIDAS:      ' WS-TOT-CTA-LEIDOS  00162813
+            DISPLAY 'CANTIDAD CUENTAS IMPRESAS:    ' WS-TOT-CTA-GRABADOS00162913
+            DISPLAY 'CANTIDAD CUENTAS DUPLICADAS:  ' WS-TOT-CTA-DUP     00163013
+            DISPLAY 'CANTIDAD CUENTAS SIN CLIENTE: ' WS-TOT-CTA-SIN-CLI 00163113
+            DISPLAY 'CANTIDAD SALDOS INVALIDOS:    ' WS-TOT-SALDO-INV   00163213
+           END-IF.                                                      00163313
+       F-9999-FINAL.                                                    00163413
+           EXIT.                                                        00163513
+                                                                        00163613
+       10000-EVAL-SQL-CODE.                                             00164012
+           IF SQLCODE NOT EQUAL ZEROS                                   00165012
+              MOVE SQLCODE   TO WS-SQLCODE                              00166012
+              DISPLAY '* ERROR ' WS-NOMBRE-SQL ' = ' WS-SQLCODE         00167012
+              MOVE 9999 TO RETURN-CODE                                  00168012
+              SET  WS-FIN-PROCESO TO TRUE                               00169012
+           END-IF.                                                      00169112
+       F-10000-EVAL-SQL-CODE. EXIT.                                     00169212
+                                                                        00169312
+      *                                                                 00170007

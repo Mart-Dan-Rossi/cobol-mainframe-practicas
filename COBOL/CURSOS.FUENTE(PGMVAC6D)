@@ -1,0 +1,232 @@
+       IDENTIFICATION DIVISION.                                         00010019
+      *                                                        *        00020019
+        PROGRAM-ID PGMVAC6D.                                            00030020
+      **********************************************************        00040019
+      *                                                        *        00050019
+      *  OBJETIVO: PR·CTICA CODIFICACIÛN COBOL                 *        00060019
+      *                                                        *        00070019
+      *                                                        *        00080019
+      **********************************************************        00090019
+       ENVIRONMENT DIVISION.                                            00100019
+       INPUT-OUTPUT SECTION.                                            00110019
+       FILE-CONTROL.                                                    00120019
+             SELECT NOVCLIEN  ASSIGN DDCLIEN                            00130020
+                    FILE STATUS IS FS-NOVCLIEN.                         00140020
+                                                                        00150019
+             SELECT SNOVCLIE   ASSIGN DDSNCLI                           00160023
+                    FILE STATUS IS FS-SNOVCLIE.                         00170023
+                                                                        00180019
+       DATA DIVISION.                                                   00220019
+       FILE SECTION.                                                    00230019
+       FD NOVCLIEN                                                      00240020
+            BLOCK CONTAINS 0 RECORDS                                    00250019
+            RECORDING MODE IS F.                                        00260019
+                                                                        00270019
+       01 FD-REG-NOVCLIE        PIC X(50).                              00280020
+                                                                        00290019
+       FD SNOVCLIE                                                      00300023
+            BLOCK CONTAINS 0 RECORDS                                    00310019
+            RECORDING MODE IS F.                                        00320019
+                                                                        00330019
+       01 FD-REG-NOVCLIE-VAL    PIC X(55).                              00340020
+                                                                        00350019
+                                                                        00410019
+      **************************************                            00420019
+       WORKING-STORAGE SECTION.                                         00430019
+      **************************************                            00440019
+       77  FILLER        PIC X(26) VALUE '* INICIO WORKING-STORAGE *'.  00450019
+                                                                        00460019
+      **************************************                            00470019
+      * FILE STATUS                                                     00480019
+      **************************************                            00490019
+                                                                        00500019
+       77  FS-NOVCLIEN     PIC XX    VALUE SPACES.                      00510020
+           88  FS-NOVCLIEN-FIN       VALUE '10'.                        00520020
+                                                                        00530019
+       77  FS-SNOVCLIE     PIC XX    VALUE SPACES.                      00540023
+           88  FS-SNOVCLIE-FIN       VALUE '10'.                        00550020
+                                                                        00560019
+      **************************************                            00600019
+      * CONTADOR DE TOTALES                                             00610019
+       77  WS-CANT-LEIDOS          PIC 9(3)      VALUE ZEROS.           00620019
+                                                                        00650019
+      * CONTADOR DE REGISTROS QUE CUMPLEN LA CONDICION                  00660019
+       77  WS-CANT-GRABADOS        PIC 9(3)      VALUE ZEROS.           00661020
+       77  WS-CANT-ERR             PIC 9(3)      VALUE ZEROS.           00680023
+                                                                        00690019
+      **************************************                            00700019
+      * COPY PARA ESTRUCTURA DE DATOS                                   00710019
+      **************************************                            00720019
+                                                                        00740120
+       COPY CPNOVCLI.                                                   00741020
+       COPY CPNCLIV.                                                    00750020
+                                                                        00751020
+       01  FILLER        PIC X(26) VALUE '* FINAL  WORKING-STORAGE *'.  00760019
+                                                                        00770019
+      ***************************************************************.  00780019
+       PROCEDURE DIVISION.                                              00790019
+      **************************************                            00800019
+      *                                    *                            00810019
+      *  CUERPO PRINCIPAL DEL PROGRAMA     *                            00820019
+      *                                    *                            00830019
+      **************************************                            00840019
+       MAIN-PROGRAM.                                                    00850019
+                                                                        00860019
+           PERFORM 1000-INICIO   THRU    1000-INICIO-F                  00870019
+                                                                        00880019
+           PERFORM 2000-PROCESO  THRU    2000-PROCESO-F                 00890019
+                   UNTIL FS-NOVCLIEN-FIN                                00900020
+                                                                        00910019
+           PERFORM 3000-FINAL    THRU    3000-FINAL-F                   00920019
+           .                                                            00930019
+       F-MAIN-PROGRAM. GOBACK.                                          00940019
+                                                                        00950019
+      **************************************                            00960019
+      *                                    *                            00970019
+      *  CUERPO INICIO APERTURA ARCHIVOS   *                            00980019
+      *                                    *                            00990019
+      **************************************                            01000019
+       1000-INICIO.                                                     01010019
+      *                                                                 01030019
+           INITIALIZE NOV-SECUEN                                        01030123
+           ADD 1 TO NOV-SECUEN                                          01031023
+                                                                        01032023
+           OPEN INPUT  NOVCLIEN                                         01040020
+                                                                        01050019
+           IF FS-NOVCLIEN IS NOT EQUAL '00'                             01060020
+              DISPLAY '* ERROR EN OPEN SUCURSAL= '  FS-NOVCLIEN         01070020
+              MOVE 9999 TO RETURN-CODE                                  01080019
+              SET  FS-NOVCLIEN-FIN TO TRUE                              01090020
+           ELSE                                                         01100019
+              PERFORM 2100-LEER          THRU 2100-LEER-F               01110019
+           END-IF                                                       01120019
+      *                                                                 01130019
+           OPEN OUTPUT SNOVCLIE                                         01140023
+                                                                        01150019
+           IF FS-SNOVCLIE IS NOT EQUAL '00'                             01160023
+              DISPLAY '* ERROR EN OPEN SALIDA = '  FS-SNOVCLIE          01170023
+              MOVE 9999 TO RETURN-CODE                                  01180019
+              SET  FS-NOVCLIEN-FIN TO TRUE                              01190023
+           END-IF                                                       01200019
+           .                                                            01290019
+       1000-INICIO-F. EXIT.                                             01300019
+                                                                        01310019
+      **************************************                            01320019
+      *                                    *                            01330019
+      *  CUERPO PRINCIPAL DE PROCESOS      *                            01340019
+      *                                    *                            01350019
+      **************************************                            01360019
+       2000-PROCESO.                                                    01370019
+      *                                                                 01380019
+           IF NOV-TIP-DOC  EQUAL 'DU' OR                                01390020
+              NOV-TIP-DOC  EQUAL 'PA' OR                                01391020
+              NOV-TIP-DOC  EQUAL 'PE' OR                                01392020
+              NOV-TIP-DOC  EQUAL 'CI'                                   01393020
+              PERFORM 2200-GRABAR-NOVCLIE THRU 2200-GRABAR-NOVCLIE-F    01400023
+           ELSE                                                         01410019
+              PERFORM 2300-MOSTRAR-REG-ERR THRU                         01411023
+                      2300-MOSTRAR-REG-ERR-F                            01412023
+           END-IF                                                       01430019
+                                                                        01440019
+           PERFORM 2100-LEER           THRU 2100-LEER-F                 01450019
+           .                                                            01460019
+       2000-PROCESO-F. EXIT.                                            01470019
+                                                                        01480019
+      **************************************                            01490019
+      *  LEER REGISTROS                    *                            01500019
+      **************************************                            01510019
+       2100-LEER.                                                       01520019
+           READ NOVCLIEN          INTO WS-REG-NOVCLIE                   01530020
+                                                                        01540019
+           EVALUATE FS-NOVCLIEN                                         01550020
+              WHEN '00'                                                 01560023
+                ADD 1 TO WS-CANT-LEIDOS                                 01570023
+              WHEN '10'                                                 01580019
+                SET  FS-NOVCLIEN-FIN TO TRUE                            01585023
+                                                                        01600019
+              WHEN OTHER                                                01610019
+                DISPLAY '* ERROR EN LECTURA SUCURSAL= ' FS-NOVCLIEN     01620023
+                MOVE 9999 TO RETURN-CODE                                01630023
+                SET FS-NOVCLIEN-FIN  TO TRUE                            01640023
+                                                                        01650019
+           END-EVALUATE                                                 01660019
+           .                                                            01670019
+       2100-LEER-F. EXIT.                                               01680019
+                                                                        01690019
+                                                                        01693023
+      **************************************                            01700019
+      *  GRABAR NOVCLIE                    *                            01710023
+      **************************************                            01720019
+       2200-GRABAR-NOVCLIE.                                             01730020
+           ADD 1 TO NOV-SECUEN                                          01731023
+           MOVE WS-REG-NOVCLIE TO NOV-RESTO                             01732023
+                                                                        01733023
+           WRITE FD-REG-NOVCLIE-VAL  FROM REG-NOVCLIE-VAL               01740020
+                                                                        01750019
+           EVALUATE FS-SNOVCLIE                                         01760023
+             WHEN '00'                                                  01770019
+                            ADD 1 TO WS-CANT-GRABADOS                   01780021
+              WHEN '10'                                                 01790019
+                CONTINUE                                                01800019
+                                                                        01810019
+           WHEN OTHER                                                   01820019
+              DISPLAY '* ERROR EN GRABAR FEMENINO = ' FS-SNOVCLIE       01830023
+              MOVE 9999 TO RETURN-CODE                                  01840019
+              SET FS-SNOVCLIE-FIN TO TRUE                               01850023
+                                                                        01860019
+           END-EVALUATE                                                 01870019
+           .                                                            01880019
+       2200-GRABAR-NOVCLIE-F. EXIT.                                     01890023
+                                                                        02110019
+                                                                        02110123
+       2300-MOSTRAR-REG-ERR.                                            02110223
+           ADD 1 TO WS-CANT-ERR                                         02111023
+                                                                        02111123
+           DISPLAY 'TIPO DE DOCUMENTO INVALIDO!'                        02111223
+           DISPLAY 'DOCUMENTO N∞: ' WS-CANT-LEIDOS                      02111323
+           DISPLAY 'ES DE TIPO:   ' NOV-TIP-DOC                         02111423
+           .                                                            02111523
+       2300-MOSTRAR-REG-ERR-F. EXIT.                                    02112023
+                                                                        02113023
+      **************************************                            02120019
+      *                                    *                            02130019
+      *  CUERPO FINAL                      *                            02140019
+      *                                    *                            02150019
+      **************************************                            02160019
+       3000-FINAL.                                                      02170019
+           IF RETURN-CODE NOT EQUAL 9999                                02180019
+            PERFORM  3010-CLOSE-FILES      THRU  3010-CLOSE-FILES-F     02190019
+            PERFORM  3020-MOSTRAR-TOTALES  THRU  3020-MOSTRAR-TOTALES-F 02200019
+           END-IF                                                       02210019
+           .                                                            02220019
+       3000-FINAL-F. EXIT.                                              02230019
+      **************************************                            02240019
+      *   CERRAR ARCHIVOS                  *                            02250019
+      **************************************                            02260019
+       3010-CLOSE-FILES.                                                02270019
+           CLOSE NOVCLIEN                                               02280022
+              IF FS-NOVCLIEN IS NOT EQUAL '00'                          02290022
+                DISPLAY '* ERROR EN CLOSE SUCURSAL= '                   02300019
+                                            FS-NOVCLIEN                 02310022
+                MOVE 9999 TO RETURN-CODE                                02320019
+             END-IF                                                     02330019
+                                                                        02340019
+           CLOSE SNOVCLIE                                               02350022
+              IF FS-SNOVCLIE IS NOT EQUAL '00'                          02360023
+                DISPLAY '* ERROR EN CLOSE FEMENINO= '                   02370019
+                                            FS-SNOVCLIE                 02380023
+                MOVE 9999 TO RETURN-CODE                                02390019
+             END-IF                                                     02400019
+           .                                                            02480019
+       3010-CLOSE-FILES-F. EXIT.                                        02490019
+                                                                        02500019
+      **************************************                            02510019
+      *  MOSTRAR TOTALES                   *                            02520019
+      **************************************                            02530019
+       3020-MOSTRAR-TOTALES.                                            02540019
+           DISPLAY ' TOTAL DE ENTRADAS LEIDAS   '  WS-CANT-LEIDOS       02550023
+           DISPLAY ' TOTAL DE GRABADOS          '  WS-CANT-GRABADOS     02560023
+           DISPLAY ' TOTAL DE REGISTROS ERRONEOS'  WS-CANT-ERR          02570023
+           .                                                            02580019
+       3020-MOSTRAR-TOTALES-F. EXIT.                                    02590019
+                                                                        02600019

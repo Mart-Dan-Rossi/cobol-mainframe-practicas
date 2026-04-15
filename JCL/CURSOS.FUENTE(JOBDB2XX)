@@ -1,0 +1,44 @@
+//KC03C6DJ JOB CLASS=A,MSGCLASS=O,MSGLEVEL=(1,1),NOTIFY=&SYSUID,
+//             TIME=(,3) ,RESTART=STEP2
+//JOBLIB  DD  DSN=DSND10.SDSNLOAD,DISP=SHR                              00020002
+//********************************
+//*          EJEMPLO             *
+//*   IDCAMS DELETE              *
+//********************************
+//DELETE   EXEC PGM=IDCAMS,COND=(8,LT)
+//SYSPRINT DD SYSOUT=*
+//SYSIN    DD *
+     DELETE   KC03C6D.ARCHIVO.NOVCTA.ORDEN
+         SET MAXCC=0
+//*
+//*********************************
+//*     SORT POR TIPCUEN Y NROCUEN*
+//*********************************
+//STEP1    EXEC PGM=SORT,COND=EVEN
+//SYSOUT   DD SYSOUT=*
+//SORTIN   DD DSN=KC03C6D.ARCHIVO.NOVCTA,DISP=SHR
+//SORTOUT  DD DSN=KC03C6D.ARCHIVO.NOVCTA.ORDEN,DISP=(,CATLG),
+//            UNIT=SYSDA,VOL=SER=ZASWO1,
+//            DCB=(LRECL=23,BLKSIZE=0,RECFM=FB),
+//            SPACE=(TRK,(1,1),RLSE)
+//SYSIN    DD *
+     SORT       FORMAT=BI,FIELDS=(1,2,A,3,5,A)
+//*
+//***************************************************************
+//*      EJECUTAR PROGRAMA COBOL CON SQL EMBEBIDO               *
+//***************************************************************
+//*
+//STEP2    EXEC PGM=IKJEFT01,DYNAMNBR=20,COND=(4,LT)                    00030002
+//SYSTSPRT DD SYSOUT=*                                                  00040002
+//DDNOVCTA DD DSN=KC03C6D.ARCHIVO.NOVCTA.ORDEN,DISP=SHR
+//SYSOUT   DD SYSOUT=*
+//SYSTSIN  DD *                                                         00050002
+  DSN SYSTEM(DBDG)                                                      00060002
+  RUN  PROGRAM(PGMB6C6D) PLAN(CURSOC6D) +                               00554000
+      LIB('KC03C6D.CURSOS.PGMLIB')                                      00560000
+  END                                                                   00085007
+//SYSPRINT DD SYSOUT=*                                                  00090002
+//SYSUDUMP DD SYSOUT=*                                                  00100002
+//SYSIN    DD *                                                         00110002
+//*
+//

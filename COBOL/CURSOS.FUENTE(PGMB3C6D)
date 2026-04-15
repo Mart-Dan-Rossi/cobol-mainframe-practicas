@@ -1,0 +1,703 @@
+       CBL TEST                                                         00001000
+       IDENTIFICATION DIVISION.                                         00002000
+      *                                                        *        00003000
+       PROGRAM-ID. PGMB3C6D.                                            00004007
+      **********************************************************        00005000
+      *                                                        *        00006000
+      *  PROGRAMA PARA SQL EMBEBIDO                            *        00007000
+      *                                                        *        00016500
+      **********************************************************        00016800
+      *      MANTENIMIENTO DE PROGRAMA                         *        00016900
+      **********************************************************        00017000
+      *  FECHA   *    DETALLE        * COD *                            00018000
+      **************************************                            00019000
+      *          *                   *     *                            00019100
+      *          *                   *     *                            00019200
+      **************************************                            00019300
+       ENVIRONMENT DIVISION.                                            00019400
+       CONFIGURATION SECTION.                                           00019500
+       SPECIAL-NAMES.                                                   00019600
+           DECIMAL-POINT IS COMMA.                                      00019700
+                                                                        00019800
+       INPUT-OUTPUT SECTION.                                            00019900
+       FILE-CONTROL.                                                    00020000
+                                                                        00020600
+             SELECT SALIDA  ASSIGN DDSALE                               00021000
+             FILE STATUS IS WS-CODE-SAL.                                00022300
+                                                                        00022407
+             SELECT NOV     ASSIGN DDNOV                                00022509
+             ACCESS IS SEQUENTIAL                                       00022607
+             FILE STATUS IS WS-CODE-NOV.                                00022707
+                                                                        00022800
+       DATA DIVISION.                                                   00022900
+       FILE SECTION.                                                    00023000
+       FD SALIDA                                                        00040100
+             BLOCK CONTAINS 0 RECORDS                                   00040200
+             RECORDING MODE IS F.                                       00040300
+                                                                        00040400
+       01 REG-SALIDA      PIC X(132).                                   00040504
+                                                                        00040607
+       FD NOV                                                           00040707
+             BLOCK CONTAINS 0 RECORDS                                   00040807
+             RECORDING MODE IS F.                                       00040907
+                                                                        00041007
+       01 REG-NOVEDAD     PIC X(80).                                    00041107
+                                                                        00041200
+      **************************************                            00041300
+       WORKING-STORAGE SECTION.                                         00041400
+      **************************************                            00041500
+       77  FILLER        PIC X(26) VALUE '* INICIO WORKING-STORAGE *'.  00041600
+                                                                        00041700
+       77  WS-CODE-SAL      PIC XX    VALUE SPACES.                     00041800
+       77  WS-CODE-NOV      PIC XX    VALUE SPACES.                     00041907
+                                                                        00042007
+       77  WS-TOT-LEIDOS    PIC 9(3)  VALUE ZEROS.                      00042107
+       77  WS-TOT-ALTAS     PIC 9(3)  VALUE ZEROS.                      00042207
+       77  WS-TOT-ERROR     PIC 9(3)  VALUE ZEROS.                      00042307
+       77  WS-TOT-MODIF     PIC 9(3)  VALUE ZEROS.                      00042407
+                                                                        00042507
+       01  WS-FLAG-FIN      PIC X.                                      00042607
+           88  WS-SI-PROCESO      VALUE ' '.                            00042707
+           88  WS-FIN-PROCESO     VALUE 'F'.                            00042807
+                                                                        00042907
+       77  WS-MENSAJE-ERROR-DUPLICADO PIC X(15) VALUE                   00043009
+                           'CLAVE DUPLICADA'.                           00044009
+                                                                        00044109
+       77  WS-MENSAJE-ERROR-CLI-DUPLICADO PIC X(16) VALUE               00044209
+                           'NROCLI DUPLICADO'.                          00044309
+                                                                        00044409
+       77  WS-MENSAJE-ERROR-TIP-DOC PIC X(26) VALUE                     00044509
+                           'TIPO DE DOCUMENTO INVALIDO'.                00044609
+                                                                        00044709
+       77  WS-MENSAJE-ERROR-NRO-DOC PIC X(25) VALUE                     00044908
+                           'NRO DE DOCUMENTO INVALIDO'.                 00045008
+                                                                        00045108
+       77  WS-MENSAJE-ERROR-CLI-NRO PIC X(23) VALUE                     00045608
+                           'NRO DE CLIENTE INVALIDO'.                   00045708
+                                                                        00045808
+       77  WS-MENSAJE-ERROR-TIP-OPER PIC X(23) VALUE                    00046308
+                           'TIPO OPERACION INVALIDA'.                   00046408
+                                                                        00046508
+       77  WS-MENSAJE-ERROR-NOMBRE   PIC X(15) VALUE                    00046607
+                           'NOMBRE INVALIDO'.                           00046707
+                                                                        00046809
+      *01  WS-FLAG-ERR-VAL-FECNAC   PIC X.                              00046909
+      *    88  WS-ERROR-VAL-FECNAC   VALUE 'T'.                         00047009
+      *    88  WS-FECNAC-VALIDA    VALUE 'F'.                           00047109
+                                                                        00047307
+       77  WS-MENSAJE-ERROR-FECNAC   PIC X(28) VALUE                    00047407
+                           'FECHA DE NACIMIENTO INVALIDA'.              00047507
+                                                                        00047907
+       77  WS-MENSAJE-ERROR-SEXO     PIC X(13) VALUE                    00048009
+                           'SEXO INVALIDO'.                             00048107
+                                                                        00048207
+       01  WS-CONTADOR-ERRORES-EN-NOV PIC 99 VALUE ZEROS.               00048307
+                                                                        00048607
+       77  WS-MAX-LINEAS       PIC 99    VALUE 20.                      00049407
+       77  WS-CUENTA-LINEA     PIC 99    VALUE ZEROS.                   00049509
+       77  WS-CUENTA-PAGINA    PIC 99    VALUE ZEROS.                   00049607
+                                                                        00049707
+       01 WS-FECHA-SISTEMA.                                             00049807
+          03 WS-FECHA-SISTEMA-ANIO PIC 9(4)     VALUE ZEROS.            00049907
+          03 WS-FECHA-SISTEMA-MES  PIC 99       VALUE ZEROS.            00050007
+          03 WS-FECHA-SISTEMA-DIA  PIC 99       VALUE ZEROS.            00050107
+                                                                        00050208
+       01 WS-MASCARA-FECHA.                                             00050308
+          03 WS-MASCARA-FECHA-ANIO PIC 9(4)     VALUE ZEROS.            00050408
+          03 WS-MASCARA-FECHA-MES  PIC 99       VALUE ZEROS.            00050508
+          03 WS-MASCARA-FECHA-DIA  PIC 99       VALUE ZEROS.            00050608
+                                                                        00050709
+      *01 WS-ANIO-BICIESTO PIC X.                                       00050811
+      *   88 WS-ES-BICIESTO VALUE 'T'.                                  00050911
+      *   88 WS-NO-BICIESTO VALUE 'F'.                                  00051011
+                                                                        00051108
+      ******************************************************            00052009
+      *    COPY NOV                                        *            00052109
+      ******************************************************            00052209
+           COPY NOVECLIE.                                               00052309
+                                                                        00052409
+       01 WS-TITULO.                                                    00052509
+          03  FILLER               PIC X(41)    VALUE                   00052609
+           'LISTADO DE ERRORES EN NOVEDADES - FECHA: '.                 00052709
+          03  WS-TITULO-FECHA.                                          00052809
+              05 WS-TITULO-DIA     PIC Z9       VALUE ZEROS.            00052909
+              05 FILLER            PIC X        VALUE '-'.              00053011
+              05 WS-TITULO-MES     PIC 99       VALUE ZEROS.            00053109
+              05 FILLER            PIC X        VALUE '-'.              00053211
+              05 WS-TITULO-ANIO    PIC 9(4)     VALUE ZEROS.            00053309
+          03  WS-PAGINA.                                                00053409
+              05 FILLER            PIC X(05)    VALUE ' PAG '.          00053511
+              05 WS-NRO-PAGINA     PIC 99       VALUE ZEROS.            00053609
+                                                                        00055609
+       01 WS-SUBTITULO.                                                 00055709
+          03  FILLER               PIC X(13)    VALUE                   00055809
+                                                       'TIPO NOVEDAD|'. 00055909
+          03  FILLER               PIC X(09)    VALUE                   00056009
+                                                           'TIPO DOC|'. 00056109
+          03  FILLER               PIC X(14)    VALUE                   00056209
+                                                      'NRO DOCUMENTO|'. 00056309
+          03  FILLER               PIC X(12)    VALUE                   00056409
+                                                        'NRO CLIENTE|'. 00056509
+          03  FILLER               PIC X(31)    VALUE                   00056609
+                                     '       NOMBRE Y APELLIDO      |'. 00056709
+          03  FILLER               PIC X(17)    VALUE                   00056809
+                                                   'FECHA NACIMIENTO|'. 00056909
+          03  FILLER               PIC X(05)    VALUE                   00057009
+                                                               'SEXO|'. 00057109
+          03  FILLER               PIC X(31)    VALUE                   00057209
+                                     '     DESCRIPCION DEL ERROR     '. 00057309
+                                                                        00057409
+                                                                        00057611
+       01 WS-RENGLON-ERRORES.                                           00057711
+          03 FILLER PIC X(12) VALUE SPACES.                             00057811
+          03 FILLER PIC X(01) VALUE '|'.                                00057911
+          03 FILLER PIC X(08) VALUE SPACES.                             00058011
+          03 FILLER PIC X(01) VALUE '|'.                                00058111
+          03 FILLER PIC X(13) VALUE SPACES.                             00058211
+          03 FILLER PIC X(01) VALUE '|'.                                00058311
+          03 FILLER PIC X(11) VALUE SPACES.                             00058411
+          03 FILLER PIC X(01) VALUE '|'.                                00058511
+          03 FILLER PIC X(30) VALUE SPACES.                             00058611
+          03 FILLER PIC X(01) VALUE '|'.                                00058711
+          03 FILLER PIC X(16) VALUE SPACES.                             00058811
+          03 FILLER PIC X(01) VALUE '|'.                                00058911
+          03 FILLER PIC X(04) VALUE SPACES.                             00059011
+          03 FILLER PIC X(01) VALUE '|'.                                00059111
+          03 REG-DESC-ERROR PIC X(31) VALUE SPACES.                     00059211
+                                                                        00059311
+       77 RENGLON-SEPARADOR PIC X(132) VALUE ALL "-".                   00059411
+      *****************************************                         00059511
+      *         LAYOUT TABLA CUENTAS          *                         00059609
+      *                                       *                         00059709
+      *****************************************                         00059809
+       01 WS-REG-SALIDA.                                                00059909
+           03  REG-TIPNOV          PIC X(02)     VALUE SPACES.          00060009
+           03  FILLER              PIC X(10)     VALUE SPACES.          00060109
+           03  FILLER              PIC X         VALUE "|".             00060209
+           03  REG-TIPDOC          PIC X(02)     VALUE SPACES.          00060309
+           03  FILLER              PIC X(06)     VALUE SPACES.          00060409
+           03  FILLER              PIC X         VALUE "|".             00060509
+           03  FILLER              PIC X(02)     VALUE SPACES.          00060609
+           03  REG-NRODOC          PIC 9(11)     VALUE ZEROS.           00060709
+           03  FILLER              PIC X         VALUE "|".             00060809
+           03  FILLER              PIC X(08)     VALUE SPACES.          00060909
+           03  REG-NROCLI          PIC 9(03)     VALUE ZEROS.           00061009
+           03  FILLER              PIC X         VALUE "|".             00061109
+           03  REG-NOMBRE          PIC X(30)     VALUE SPACES.          00061209
+           03  FILLER              PIC X         VALUE "|".             00061309
+           03  FILLER              PIC X(08)     VALUE SPACES.          00061409
+           03  REG-FECNAC          PIC 9(08)     VALUE ZEROS.           00061509
+           03  FILLER              PIC X         VALUE "|".             00061609
+           03  REG-SEXO            PIC X(01)     VALUE SPACES.          00061709
+           03  FILLER              PIC X(03)     VALUE SPACES.          00061809
+           03  FILLER              PIC X         VALUE "|".             00061909
+           03  FILLER              PIC X(31)     VALUE SPACES.          00062009
+                                                                        00062109
+       01  WS-FECHA-TBCURCLI-FORMAT.                                    00062209
+           03  WS-FECHA-TBCURCLI-YYYY PIC 9(04) VALUE ZEROS.            00062309
+           03  FILLER                 PIC X(01) VALUE "-".              00062409
+           03  WS-FECHA-TBCURCLI-MM   PIC 9(02) VALUE ZEROS.            00062509
+           03  FILLER                 PIC X(01) VALUE "-".              00062609
+           03  WS-FECHA-TBCURCLI-DD   PIC 9(02) VALUE ZEROS.            00062709
+                                                                        00062809
+       77  FILLER        PIC X(26) VALUE '* VARIABLES SQL          *'.  00062909
+       77  WS-SQLCODE    PIC +++999 USAGE DISPLAY VALUE ZEROS.          00063009
+                                                                        00063109
+            EXEC SQL                                                    00063209
+              INCLUDE SQLCA                                             00063309
+            END-EXEC.                                                   00063409
+                                                                        00063509
+            EXEC SQL                                                    00063609
+              INCLUDE TBCURCLI                                          00063709
+            END-EXEC.                                                   00063809
+                                                                        00063909
+       77  FILLER        PIC X(26) VALUE '* FINAL  WORKING-STORAGE *'.  00064009
+                                                                        00064109
+      ***************************************************************.  00064209
+       PROCEDURE DIVISION.                                              00064309
+      **************************************                            00064409
+      *                                    *                            00064509
+      *  CUERPO PRINCIPAL DEL PROGRAMA     *                            00064609
+      *                                    *                            00064709
+      **************************************                            00064809
+       MAIN-PROGRAM.                                                    00064909
+                                                                        00065009
+           PERFORM 1000-I-INICIO                                        00065109
+              THRU F-1000-INICIO.                                       00065209
+                                                                        00065309
+           PERFORM 2000-PROCESO    THRU                                 00065409
+                   F-2000-PROCESO        UNTIL WS-FIN-PROCESO.          00065509
+                                                                        00065609
+           PERFORM 9999-FINAL      THRU                                 00065709
+                   F-9999-FINAL.                                        00065809
+            EXEC SQL ROLLBACK END-EXEC.                                 00065909
+       F-MAIN-PROGRAM. GOBACK.                                          00066009
+                                                                        00066109
+      **************************************                            00066209
+      *                                    *                            00066309
+      *  CUERPO INICIO APERTURA ARCHIVOS   *                            00066409
+      *                                    *                            00066509
+      **************************************                            00066609
+       1000-I-INICIO.                                                   00066709
+           ACCEPT WS-FECHA-SISTEMA FROM DATE YYYYMMDD.                  00066809
+                                                                        00066909
+           MOVE WS-FECHA-SISTEMA-ANIO TO WS-TITULO-ANIO.                00067009
+           MOVE WS-FECHA-SISTEMA-MES  TO WS-TITULO-MES.                 00067109
+           MOVE WS-FECHA-SISTEMA-DIA  TO WS-TITULO-DIA.                 00067209
+                                                                        00067309
+           MOVE WS-MAX-LINEAS TO WS-CUENTA-LINEA                        00067409
+           ADD 1 TO WS-CUENTA-LINEA                                     00067509
+                                                                        00067609
+           SET WS-SI-PROCESO  TO TRUE.                                  00068009
+                                                                        00072400
+           OPEN OUTPUT SALIDA.                                          00072500
+           IF WS-CODE-SAL    IS NOT EQUAL '00'                          00072600
+              DISPLAY '* ERROR EN OPEN SALIDA  = ' WS-CODE-SAL          00072700
+              MOVE 9999 TO RETURN-CODE                                  00072800
+              SET  WS-FIN-PROCESO TO TRUE                               00072900
+           END-IF.                                                      00073000
+                                                                        00073107
+           OPEN INPUT NOV.                                              00073209
+           IF WS-CODE-NOV    IS NOT EQUAL '00'                          00073307
+              DISPLAY '* ERROR EN OPEN SALIDA  = ' WS-CODE-NOV          00073407
+              MOVE 9999 TO RETURN-CODE                                  00073507
+              SET  WS-FIN-PROCESO TO TRUE                               00073607
+           ELSE                                                         00073709
+              PERFORM 2100-LEER-NOVEDAD                                 00073809
+                 THRU F-2100-LEER-NOVEDAD                               00073909
+           END-IF.                                                      00074007
+       F-1000-INICIO.   EXIT.                                           00077208
+                                                                        00077300
+      **************************************                            00077500
+      *                                    *                            00077600
+      *  CUERPO PRINCIPAL DEL PROGRAMA     *                            00077700
+      *                                    *                            00077800
+      **************************************                            00077900
+       2000-PROCESO.                                                    00078008
+      *DENTRO DE LAS VALIDACIONES TAMBIEN VEO KEYS Y CLINRO DUPLICADOS  00083509
+      *Y GESTIONO LA MUESTRA DE LOS ERRORES EN EL ARCHIVO DE SALIDA     00083609
+             PERFORM 4000-VALIDACIONES                                  00083709
+                THRU F-4000-VALIDACIONES.                               00083809
+                                                                        00083909
+      *SI NO TENGO ERRORES ENCONTRADOS CON LA VALIDACION                00084009
+             IF WS-CONTADOR-ERRORES-EN-NOV = 0                          00084109
+                                                                        00084809
+                IF REG-TIPNOV = 'AL'                                    00084909
+                   PERFORM 2200-DAR-ALTA                                00085009
+                      THRU F-2200-DAR-ALTA                              00085109
+                                                                        00086009
+                ELSE IF REG-TIPNOV = 'CX'                               00087509
+                   PERFORM 2300-MODIFICAR-SEXO                          00087609
+                      THRU F-2300-MODIFICAR-SEXO                        00087709
+                                                                        00087809
+                ELSE IF REG-TIPNOV = 'CN'                               00089609
+                   PERFORM 2400-MODIFICAR-NOMAPE                        00089709
+                      THRU F-2400-MODIFICAR-NOMAPE                      00089809
+                END-IF                                                  00089909
+                ADD 1 TO WS-TOT-ERROR                                   00092810
+             END-IF.                                                    00092909
+                                                                        00093010
+                                                                        00093109
+             PERFORM 2100-LEER-NOVEDAD                                  00093209
+                THRU F-2100-LEER-NOVEDAD.                               00093309
+       F-2000-PROCESO. EXIT.                                            00093408
+                                                                        00093508
+       2100-LEER-NOVEDAD.                                               00093608
+           INITIALIZE WS-FECHA-TBCURCLI-FORMAT.                         00093708
+           INITIALIZE WS-REG-SALIDA.                                    00093809
+                                                                        00093908
+           READ NOV INTO WS-REG-NOVECLI.                                00094008
+                                                                        00094108
+           EVALUATE WS-CODE-NOV                                         00094208
+              WHEN '00'                                                 00094308
+                  ADD 1 TO WS-TOT-LEIDOS                                00094408
+                                                                        00094508
+                  MOVE NOV-TIP-NOV           TO REG-TIPNOV              00094609
+                  MOVE NOV-TIP-DOC           TO REG-TIPDOC              00094709
+                  MOVE NOV-NRO-DOC           TO REG-NRODOC              00094809
+                  MOVE NOV-CLI-NRO           TO REG-NROCLI              00094909
+                  MOVE NOV-CLI-NOMBRE        TO REG-NOMBRE              00095009
+                  MOVE NOV-CLI-FENAC         TO WS-MASCARA-FECHA        00095109
+                  MOVE WS-MASCARA-FECHA-ANIO TO WS-FECHA-TBCURCLI-YYYY  00095209
+                  MOVE WS-MASCARA-FECHA-MES  TO WS-FECHA-TBCURCLI-MM    00095309
+                  MOVE WS-MASCARA-FECHA-DIA  TO WS-FECHA-TBCURCLI-DD    00095409
+                  MOVE NOV-CLI-FENAC         TO REG-FECNAC              00095509
+                  MOVE NOV-CLI-SEXO          TO REG-SEXO                00095609
+                                                                        00095711
+                  MOVE REG-TIPDOC TO WT-TIPDOC                          00095811
+                  MOVE REG-NRODOC TO WT-NRODOC                          00095911
+                  MOVE REG-NROCLI TO WT-NROCLI                          00096011
+                  MOVE REG-NOMBRE TO WT-NOMAPE                          00096111
+                  MOVE WS-FECHA-TBCURCLI-FORMAT TO WT-FECNAC            00096211
+                  MOVE REG-SEXO TO WT-SEXO                              00096311
+              WHEN '10'                                                 00096408
+                  SET WS-FIN-PROCESO TO TRUE                            00096508
+              WHEN OTHER                                                00096608
+                  DISPLAY '* ERROR EN LECTURA CLIENTE  = ' WS-CODE-NOV  00096708
+                  MOVE 9999 TO RETURN-CODE                              00096808
+                  SET WS-FIN-PROCESO TO TRUE                            00096908
+           END-EVALUATE                                                 00097008
+           .                                                            00097108
+       F-2100-LEER-NOVEDAD. EXIT.                                       00097208
+                                                                        00097309
+       2200-DAR-ALTA.                                                   00097409
+           EXEC SQL INSERT                                              00097509
+              INTO KC02803.TBCURCLI                                     00097609
+              (TIPDOC, NRODOC, NROCLI, NOMAPE, FECNAC, SEXO)            00097709
+              VALUES (:WT-TIPDOC,                                       00097809
+                      :WT-NRODOC,                                       00097909
+                      :WT-NROCLI,                                       00098009
+                      :WT-NOMAPE,                                       00098109
+                      :WT-FECNAC,                                       00098209
+                      :WT-SEXO)                                         00098309
+                                                                        00098409
+           END-EXEC                                                     00098509
+                                                                        00098609
+           IF SQLCODE = 0                                               00098709
+              ADD 1 TO WS-TOT-ALTAS                                     00098809
+              DISPLAY 'SE DIO DE ALTA: ' WT-TIPDOC WT-NRODOC            00098909
+           ELSE                                                         00099009
+              MOVE SQLCODE TO WS-SQLCODE                                00099109
+              DISPLAY 'ERROR AL INSERTAR REGISTRO: '                    00099209
+                                         WS-SQLCODE                     00099309
+              EXEC SQL                                                  00099409
+                ROLLBACK                                                00099509
+              END-EXEC                                                  00099609
+                                                                        00099709
+              SET WS-FIN-PROCESO TO TRUE                                00099809
+           END-IF.                                                      00099909
+       F-2200-DAR-ALTA. EXIT.                                           00100009
+                                                                        00100109
+       2300-MODIFICAR-SEXO.                                             00100209
+           EXEC SQL                                                     00100309
+               UPDATE KC02803.TBCURCLI                                  00100409
+                  SET SEXO = :WT-SEXO                                   00100509
+                WHERE TIPDOC = :WT-TIPDOC                               00100609
+                  AND NRODOC = :WT-NRODOC                               00100709
+           END-EXEC                                                     00100809
+                                                                        00100909
+           IF SQLCODE = 0                                               00101009
+              ADD 1 TO WS-TOT-MODIF                                     00101109
+              DISPLAY 'SE MODIFICO SEXO DE: ' WT-TIPDOC WT-NRODOC       00101209
+           ELSE                                                         00101309
+              MOVE SQLCODE TO WS-SQLCODE                                00101409
+              DISPLAY 'ERROR AL INSERTAR REGISTRO: '                    00101509
+                                         WS-SQLCODE                     00101609
+              EXEC SQL                                                  00101709
+                ROLLBACK                                                00101809
+              END-EXEC                                                  00101909
+                                                                        00102009
+              SET WS-FIN-PROCESO TO TRUE                                00102109
+           END-IF.                                                      00102209
+       F-2300-MODIFICAR-SEXO. EXIT.                                     00102309
+                                                                        00102409
+       2400-MODIFICAR-NOMAPE.                                           00102509
+           EXEC SQL                                                     00102609
+               UPDATE KC02803.TBCURCLI                                  00102709
+                  SET NOMAPE = :WT-NOMAPE                               00102809
+                WHERE TIPDOC = :WT-TIPDOC                               00102909
+                  AND NRODOC = :WT-NRODOC                               00103009
+           END-EXEC                                                     00103109
+                                                                        00103209
+           IF SQLCODE = 0                                               00103309
+              ADD 1 TO WS-TOT-MODIF                                     00103409
+              DISPLAY 'SE MODIFICO NOMAPE DE'                           00103509
+                                         WT-TIPDOC WT-NRODOC            00103609
+           ELSE                                                         00103709
+              MOVE SQLCODE TO WS-SQLCODE                                00103809
+              DISPLAY 'ERROR AL INSERTAR REGISTRO: '                    00103909
+                                         WS-SQLCODE                     00104009
+              EXEC SQL                                                  00104109
+                ROLLBACK                                                00104209
+              END-EXEC                                                  00104309
+                                                                        00104409
+              SET WS-FIN-PROCESO TO TRUE                                00104509
+           END-IF.                                                      00104609
+       F-2400-MODIFICAR-NOMAPE. EXIT.                                   00105009
+                                                                        00106009
+       4000-VALIDACIONES.                                               00106109
+           INITIALIZE WS-CONTADOR-ERRORES-EN-NOV.                       00106209
+                                                                        00106309
+           PERFORM 4010-VALIDO-TIP-OPER                                 00106409
+              THRU F-4010-VALIDO-TIP-OPER.                              00106509
+                                                                        00106609
+           PERFORM 4020-VALIDO-TIP-DOC                                  00106709
+              THRU F-4020-VALIDO-TIP-DOC.                               00106809
+                                                                        00106909
+           PERFORM 4030-VALIDO-NRO-DOC                                  00107009
+              THRU F-4030-VALIDO-NRO-DOC.                               00107109
+                                                                        00107209
+           PERFORM 4040-VALIDO-CLI-NRO                                  00107309
+              THRU F-4040-VALIDO-CLI-NRO.                               00107409
+                                                                        00107511
+           IF REG-TIPNOV = "AL"                                         00107611
+             PERFORM 4060-VALIDO-FECNAC                                 00107711
+                THRU F-4060-VALIDO-FECNAC                               00107811
+             PERFORM 5000-BUSCAR-ALTA-DUPLICADA                         00107911
+                THRU F-5000-BUSCAR-ALTA-DUPLICADA                       00108011
+           END-IF.                                                      00108111
+                                                                        00108209
+           IF REG-TIPNOV = "AL"                                         00108309
+            OR REG-TIPNOV = "CN"                                        00108409
+             PERFORM 4050-VALIDO-NOMBRE                                 00108509
+                THRU F-4050-VALIDO-NOMBRE                               00108609
+           END-IF.                                                      00108709
+                                                                        00108909
+           IF REG-TIPNOV = "AL"                                         00109009
+            OR REG-TIPNOV = "CX"                                        00109109
+             PERFORM 4070-VALIDO-SEXO                                   00109209
+                THRU F-4070-VALIDO-SEXO                                 00109309
+           END-IF.                                                      00109409
+                                                                        00109509
+           IF WS-CONTADOR-ERRORES-EN-NOV > 0                            00109609
+              WRITE REG-SALIDA FROM RENGLON-SEPARADOR                   00109710
+              ADD 1 TO WS-CUENTA-LINEA                                  00109809
+                                                                        00109909
+              PERFORM 9000-EVAL-CODE-SALIDA                             00110009
+                 THRU F-9000-EVAL-CODE-SALIDA                           00110109
+           END-IF.                                                      00110209
+       F-4000-VALIDACIONES. EXIT.                                       00110309
+                                                                        00110409
+       4010-VALIDO-TIP-OPER.                                            00110509
+           IF   REG-TIPNOV NOT EQUAL 'AL'                               00110609
+            AND REG-TIPNOV NOT EQUAL 'CN'                               00110709
+            AND REG-TIPNOV NOT EQUAL 'CX'                               00111009
+              MOVE WS-MENSAJE-ERROR-TIP-OPER TO REG-DESC-ERROR          00111609
+                                                                        00111709
+              PERFORM 8000-MOSTRAR-ERRORES                              00111809
+                 THRU F-8000-MOSTRAR-ERRORES                            00111909
+           END-IF.                                                      00113009
+       F-4010-VALIDO-TIP-OPER. EXIT.                                    00113109
+                                                                        00113209
+       4020-VALIDO-TIP-DOC.                                             00113309
+           IF   REG-TIPDOC NOT EQUAL 'DU'                               00113409
+            AND REG-TIPDOC NOT EQUAL 'PA'                               00113509
+            AND REG-TIPDOC NOT EQUAL 'PE'                               00113609
+              MOVE WS-MENSAJE-ERROR-TIP-DOC  TO REG-DESC-ERROR          00115509
+                                                                        00115609
+              PERFORM 8000-MOSTRAR-ERRORES                              00115709
+                 THRU F-8000-MOSTRAR-ERRORES                            00115809
+           END-IF.                                                      00116809
+       F-4020-VALIDO-TIP-DOC. EXIT.                                     00116909
+                                                                        00117009
+       4030-VALIDO-NRO-DOC.                                             00117109
+           IF  REG-NRODOC IS NOT NUMERIC                                00117209
+              MOVE WS-MENSAJE-ERROR-NRO-DOC  TO REG-DESC-ERROR          00119009
+                                                                        00119109
+              PERFORM 8000-MOSTRAR-ERRORES                              00119209
+                 THRU F-8000-MOSTRAR-ERRORES                            00119309
+           END-IF.                                                      00120409
+       F-4030-VALIDO-NRO-DOC. EXIT.                                     00120509
+                                                                        00120609
+       4040-VALIDO-CLI-NRO.                                             00120709
+           IF  REG-NROCLI IS NOT NUMERIC                                00120809
+              MOVE WS-MENSAJE-ERROR-CLI-NRO  TO REG-DESC-ERROR          00121109
+                                                                        00121209
+              PERFORM 8000-MOSTRAR-ERRORES                              00121309
+                 THRU F-8000-MOSTRAR-ERRORES                            00121409
+           END-IF.                                                      00123809
+       F-4040-VALIDO-CLI-NRO. EXIT.                                     00123909
+                                                                        00124009
+       4050-VALIDO-NOMBRE.                                              00124109
+           IF  REG-NOMBRE = SPACES                                      00124209
+              MOVE WS-MENSAJE-ERROR-NOMBRE   TO REG-DESC-ERROR          00125209
+                                                                        00125309
+              PERFORM 8000-MOSTRAR-ERRORES                              00125409
+                 THRU F-8000-MOSTRAR-ERRORES                            00125509
+           END-IF.                                                      00126109
+       F-4050-VALIDO-NOMBRE. EXIT.                                      00126209
+                                                                        00126309
+       4060-VALIDO-FECNAC.                                              00126409
+      *    SET WS-FECNAC-VALIDA TO TRUE                                 00126509
+      *    SET WS-NO-BICIESTO TO TRUE                                   00126609
+      *                                                                 00126709
+      *    IF WS-MASCARA-FECHA IS NOT NUMERIC                           00126809
+      *       SET WS-ERROR-VAL-FECNAC TO TRUE                           00126909
+      *    END-IF                                                       00127009
+      *                                                                 00127109
+      *    IF WS-FECNAC-VALIDA                                          00127209
+      *       IF (WS-MASCARA-FECHA-ANIO MOD 400 = 0) OR                 00127309
+      *          (WS-MASCARA-FECHA-ANIO MOD 4 = 0 AND                   00127409
+      *           WS-MASCARA-FECHA-ANIO MOD 100 NOT = 0)                00127509
+      *           SET WS-ES-BICIESTO TO TRUE                            00127609
+      *       END-IF                                                    00127709
+      *                                                                 00127809
+      *       EVALUATE WS-MASCARA-FECHA-MES                             00127909
+      *                                                                 00128009
+      *          WHEN 1 3 5 7 8 10 12                                   00128109
+      *               IF WS-MASCARA-FECHA-DIA > 31                      00128209
+      *                   SET WS-ERROR-VAL-FECNAC TO TRUE               00128309
+      *               END-IF                                            00128409
+      *                                                                 00128509
+      *          WHEN 4 6 9 11                                          00128609
+      *               IF WS-MASCARA-FECHA-DIA > 30                      00128709
+      *                   SET WS-ERROR-VAL-FECNAC TO TRUE               00128809
+      *               END-IF                                            00128909
+      *                                                                 00129009
+      *          WHEN 2                                                 00129109
+      *               IF WS-ES-BISIESTO                                 00129209
+      *                   IF WS-MASCARA-FECHA-DIA > 29                  00129309
+      *                       SET WS-ERROR-VAL-FECNAC TO TRUE           00129409
+      *                   END-IF                                        00129509
+      *               ELSE                                              00129609
+      *                   IF WS-MASCARA-FECHA-DIA > 28                  00129709
+      *                       SET WS-ERROR-VAL-FECNAC TO TRUE           00129809
+      *                   END-IF                                        00129909
+      *               END-IF                                            00130009
+      *       END-EVALUATE                                              00130109
+      *    END-IF                                                       00130209
+                                                                        00130309
+      *    IF WS-ERROR-VAL-FECNAC                                       00130409
+           IF REG-FECNAC = SPACES                                       00130509
+              MOVE WS-MENSAJE-ERROR-FECNAC   TO REG-DESC-ERROR          00131509
+                                                                        00131609
+              PERFORM 8000-MOSTRAR-ERRORES                              00131709
+                 THRU F-8000-MOSTRAR-ERRORES                            00131809
+           END-IF.                                                      00132409
+       F-4060-VALIDO-FECNAC. EXIT.                                      00132509
+                                                                        00132609
+       4070-VALIDO-SEXO.                                                00132709
+           IF   REG-SEXO NOT EQUAL 'F'                                  00132809
+            AND REG-SEXO NOT EQUAL 'M'                                  00132909
+            AND REG-SEXO NOT EQUAL 'O'                                  00133009
+              MOVE WS-MENSAJE-ERROR-SEXO  TO REG-DESC-ERROR             00134209
+                                                                        00134309
+              PERFORM 8000-MOSTRAR-ERRORES                              00134409
+                 THRU F-8000-MOSTRAR-ERRORES                            00134509
+           END-IF.                                                      00135109
+       F-4070-VALIDO-SEXO. EXIT.                                        00135209
+                                                                        00135309
+       5000-BUSCAR-ALTA-DUPLICADA.                                      00135409
+           PERFORM 5100-BUSCAR-KEY-DUPLICADA                            00138709
+              THRU F-5100-BUSCAR-KEY-DUPLICADA.                         00138809
+                                                                        00138909
+           PERFORM 5200-BUSCAR-NROCLI-DUPLICADO                         00139009
+              THRU F-5200-BUSCAR-NROCLI-DUPLICADO.                      00140009
+       F-5000-BUSCAR-ALTA-DUPLICADA. EXIT.                              00142209
+                                                                        00142309
+       5100-BUSCAR-KEY-DUPLICADA.                                       00142409
+           EXEC SQL                                                     00142509
+               SELECT TIPDOC                                            00142609
+               INTO :WT-TIPDOC                                          00142709
+               FROM KC02803.TBCURCLI                                    00142809
+               WHERE TIPDOC = :WT-TIPDOC                                00142909
+                 AND NRODOC = :WT-NRODOC                                00143009
+           END-EXEC                                                     00143109
+                                                                        00143209
+           IF SQLCODE = 0                                               00143309
+               MOVE WS-MENSAJE-ERROR-DUPLICADO TO REG-DESC-ERROR        00144509
+                                                                        00144809
+               PERFORM 8000-MOSTRAR-ERRORES                             00144909
+                  THRU F-8000-MOSTRAR-ERRORES                           00145009
+           ELSE IF SQLCODE NOT EQUAL 100                                00145609
+               MOVE SQLCODE TO WS-SQLCODE                               00145709
+               DISPLAY 'ERROR DB2 BUSCANDO KEY DUP '  WS-SQLCODE        00145809
+               DISPLAY WT-TIPDOC ' ' WT-NRODOC                          00145909
+           END-IF.                                                      00146009
+       F-5100-BUSCAR-KEY-DUPLICADA. EXIT.                               00146109
+                                                                        00146209
+       5200-BUSCAR-NROCLI-DUPLICADO.                                    00146309
+           EXEC SQL                                                     00146409
+               SELECT NROCLI                                            00146509
+               INTO :WT-NROCLI                                          00146609
+               FROM KC02803.TBCURCLI                                    00146709
+               WHERE NROCLI = :WT-NROCLI                                00146809
+           END-EXEC                                                     00146909
+                                                                        00147009
+           IF SQLCODE = 0                                               00148009
+               MOVE WS-MENSAJE-ERROR-CLI-DUPLICADO TO REG-DESC-ERROR    00148209
+                                                                        00148309
+               PERFORM 8000-MOSTRAR-ERRORES                             00148409
+                  THRU F-8000-MOSTRAR-ERRORES                           00148509
+           ELSE IF SQLCODE NOT EQUAL 100                                00149309
+               MOVE SQLCODE TO WS-SQLCODE                               00149609
+               DISPLAY 'ERROR DB2 BUSCANDO NROCLI DUP ' WS-SQLCODE      00149709
+               DISPLAY WT-NROCLI                                        00149809
+           END-IF.                                                      00149909
+       F-5200-BUSCAR-NROCLI-DUPLICADO. EXIT.                            00150009
+                                                                        00150109
+       8000-MOSTRAR-ERRORES.                                            00150209
+           IF WS-CONTADOR-ERRORES-EN-NOV = 0                            00150309
+              IF WS-CUENTA-LINEA GREATER WS-MAX-LINEAS                  00150509
+                 PERFORM 8100-IMPRIMIR-TITULOS                          00150609
+                    THRU F-8100-IMPRIMIR-TITULOS                        00150709
+              END-IF                                                    00150809
+                                                                        00150909
+              WRITE REG-SALIDA FROM WS-REG-SALIDA                       00151009
+              ADD 1 TO WS-CUENTA-LINEA                                  00151109
+                                                                        00151209
+              PERFORM 9000-EVAL-CODE-SALIDA                             00151309
+                 THRU F-9000-EVAL-CODE-SALIDA                           00151409
+           END-IF                                                       00151509
+                                                                        00151809
+           ADD 1 TO WS-CONTADOR-ERRORES-EN-NOV                          00152109
+                                                                        00152209
+           IF WS-CUENTA-LINEA GREATER WS-MAX-LINEAS                     00152409
+              PERFORM 8100-IMPRIMIR-TITULOS                             00152509
+                 THRU F-8100-IMPRIMIR-TITULOS                           00152609
+           END-IF                                                       00152709
+                                                                        00152809
+           WRITE REG-SALIDA FROM WS-RENGLON-ERRORES                     00152909
+           ADD 1 TO WS-CUENTA-LINEA                                     00153009
+                                                                        00153109
+           PERFORM 9000-EVAL-CODE-SALIDA                                00153209
+              THRU F-9000-EVAL-CODE-SALIDA.                             00153309
+                                                                        00153409
+           INITIALIZE WS-RENGLON-ERRORES.                               00153509
+       F-8000-MOSTRAR-ERRORES. EXIT.                                    00153609
+                                                                        00153709
+       8100-IMPRIMIR-TITULOS.                                           00153809
+           MOVE 2     TO WS-CUENTA-LINEA                                00153909
+           ADD  1     TO WS-CUENTA-PAGINA                               00154009
+           MOVE WS-CUENTA-PAGINA      TO WS-NRO-PAGINA                  00154109
+                                                                        00154209
+           WRITE   REG-SALIDA    FROM WS-TITULO   AFTER PAGE.           00154309
+           PERFORM 9000-EVAL-CODE-SALIDA                                00154409
+              THRU F-9000-EVAL-CODE-SALIDA.                             00154509
+                                                                        00154609
+           WRITE   REG-SALIDA    FROM WS-SUBTITULO                      00154709
+           PERFORM 9000-EVAL-CODE-SALIDA                                00154809
+              THRU F-9000-EVAL-CODE-SALIDA                              00154909
+           .                                                            00155009
+       F-8100-IMPRIMIR-TITULOS. EXIT.                                   00155109
+                                                                        00155209
+       9000-EVAL-CODE-SALIDA.                                           00155309
+           IF WS-CODE-SAL    IS NOT EQUAL '00'                          00155409
+              DISPLAY '* ERROR EN WRITE SALIDA  = ' WS-CODE-SAL         00155509
+              MOVE 9999 TO RETURN-CODE                                  00155609
+              SET  WS-FIN-PROCESO TO TRUE                               00155709
+           END-IF.                                                      00155809
+                                                                        00155909
+       F-9000-EVAL-CODE-SALIDA. EXIT.                                   00156009
+                                                                        00156109
+      **************************************                            00156209
+      *                                    *                            00156309
+      *  CUERPO FINAL CIERRE DE FILES      *                            00156409
+      *                                    *                            00156509
+      **************************************                            00156609
+       9999-FINAL.                                                      00156709
+           CLOSE SALIDA                                                 00156809
+           IF WS-CODE-SAL  IS NOT EQUAL '00'                            00156909
+             DISPLAY '* ERROR EN CLOSE SALIDA  = '                      00157009
+                                         WS-CODE-SAL                    00157109
+             MOVE 9999 TO RETURN-CODE                                   00157209
+           END-IF.                                                      00157309
+                                                                        00157409
+           CLOSE NOV                                                    00157509
+           IF WS-CODE-NOV  IS NOT EQUAL '00'                            00157609
+             DISPLAY '* ERROR EN CLOSE NOVEDAD = '                      00157709
+                                         WS-CODE-NOV                    00157809
+             MOVE 9999 TO RETURN-CODE                                   00157909
+           END-IF.                                                      00158009
+                                                                        00158109
+      **************************************                            00158209
+      *   MOSTRAR TOTALES DE CONTROL                                    00158309
+      **************************************                            00158409
+           DISPLAY 'TOTAL LEIDOS:      ' WS-TOT-LEIDOS.                 00158509
+           DISPLAY 'TOTAL ALTAS:       ' WS-TOT-ALTAS.                  00158609
+           DISPLAY 'TOTAL ERRORES:     ' WS-TOT-ERROR.                  00158709
+           DISPLAY 'TOTAL MODIFICADOS: ' WS-TOT-MODIF.                  00158809
+                                                                        00158909
+       F-9999-FINAL.                                                    00159009
+           EXIT.                                                        00159109
+      *                                                                 00160007

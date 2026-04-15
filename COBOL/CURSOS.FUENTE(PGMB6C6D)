@@ -1,0 +1,349 @@
+       IDENTIFICATION DIVISION.                                         00010000
+      *                                                        *        00010500
+        PROGRAM-ID PGMB6C6D.                                            00011008
+      **********************************************************        00012000
+      *                                                        *        00013000
+      *  PROGRAMA PARA VSAM KSDS                               *        00014000
+      **********************************************************        00017400
+      *      MANTENIMIENTO DE PROGRAMA                         *        00018000
+      **********************************************************        00019000
+      *  FECHA   *    DETALLE                            * COD *        00019102
+      **********************************************************        00019202
+      *          *                                       *     *        00019308
+      *          *                                       *     *        00019408
+      *          *                                       *     *        00019508
+      *          *                                       *     *        00019602
+      **********************************************************        00019702
+       ENVIRONMENT DIVISION.                                            00020000
+       CONFIGURATION SECTION.                                           00020100
+       SPECIAL-NAMES.                                                   00020200
+           DECIMAL-POINT IS COMMA.                                      00020300
+                                                                        00020400
+       INPUT-OUTPUT SECTION.                                            00020500
+       FILE-CONTROL.                                                    00020600
+             SELECT NOVCTA  ASSIGN DDNOVCTA                             00020708
+             ACCESS IS SEQUENTIAL                                       00020900
+             FILE STATUS IS WS-NOVCTA-FS.                               00021408
+                                                                        00021500
+       DATA DIVISION.                                                   00039000
+       FILE SECTION.                                                    00039100
+       FD NOVCTA                                                        00039208
+            BLOCK CONTAINS 0 RECORDS                                    00039300
+            RECORDING MODE IS F.                                        00039400
+                                                                        00039500
+       01 FD-REG-NOVCTA     PIC X(23).                                  00039609
+                                                                        00039700
+      **************************************                            00041600
+       WORKING-STORAGE SECTION.                                         00041700
+      **************************************                            00041800
+       77  FILLER        PIC X(26) VALUE '* INICIO WORKING-STORAGE *'.  00041900
+       77  FILLER        PIC X(26) VALUE '* CODIGOS RETORNO FILES  *'.  00042000
+       77  WS-NOVCTA-FS      PIC XX    VALUE SPACES.                    00042108
+                                                                        00042400
+       01  WS-STATUS-FIN    PIC X.                                      00042500
+           88  WS-FIN-LECTURA         VALUE 'Y'.                        00042600
+           88  WS-NO-FIN-LECTURA      VALUE 'N'.                        00042700
+                                                                        00044900
+       01  WS-STATUS-NOV-FIN    PIC X.                                  00045013
+           88  WS-NOV-ENCONTRADA      VALUE 'Y'.                        00045113
+           88  WS-NO-NOV-ENCONTRADA   VALUE 'N'.                        00045213
+                                                                        00045313
+       01  WS-STATUS-CUE-FIN    PIC X.                                  00045413
+           88  WS-CUE-ENCONTRADA      VALUE 'Y'.                        00045513
+           88  WS-NO-CUE-ENCONTRADA   VALUE 'N'.                        00045613
+                                                                        00045713
+       COPY NOVCTA REPLACING                                            00045917
+       ==WS-TIPCUEN== BY ==NV-TIPCUEN==                                 00046017
+       ==WS-NROCUEN== BY ==NV-NROCUEN==                                 00046117
+       ==WS-SUCUEN==  BY ==NV-SUCUEN==                                  00046217
+       ==WS-NROCLI==  BY ==NV-NROCLI==                                  00046317
+       ==WS-SALDO==   BY ==NV-SALDO==                                   00046417
+       ==WS-FECSAL==  BY ==NV-FECSAL==.                                 00046517
+                                                                        00046617
+       01  WS-REG-NOVCTA.                                               00046717
+           03  WS-NOVCTA-KEY.                                           00046817
+              05  WS-NOVCTA-TIP-CUEN PIC XX      VALUE SPACES.          00046917
+              05  WS-NOVCTA-NROCUEN  PIC 9(5)    VALUE ZEROS.           00047013
+           03  WS-NOVCTA-NROCLI   PIC 9(3)       VALUE ZEROS.           00048019
+           03  WS-NOVCTA-SALDO    PIC 9(5)V9(2)  VALUE ZEROS.           00049019
+                                                                        00051108
+       77  WS-SQLCODE    PIC +++999 USAGE DISPLAY VALUE ZEROS.          00051208
+                                                                        00051308
+            EXEC SQL                                                    00051408
+              INCLUDE SQLCA                                             00051508
+            END-EXEC.                                                   00051608
+                                                                        00051708
+            EXEC SQL                                                    00051808
+              INCLUDE TBCURCTA                                          00051908
+            END-EXEC.                                                   00052008
+                                                                        00052108
+       01  WS-REG-TBCURCTA.                                             00052208
+           03  WS-CURCTA-KEY.                                           00052308
+              05  WS-CURCTA-TIP-CUEN PIC XX     VALUE SPACES.           00052410
+              05  WS-CURCTA-NROCUEN  PIC 9(5)   VALUE ZEROS.            00052513
+           03  WS-CURCTA-NROCLI   PIC S9(3)V USAGE COMP-3 VALUE ZEROS.  00052708
+           03  WS-CURCTA-SALDO    PIC S9(5)V9(2) USAGE COMP-3 VALUE     00052808
+                                                                ZEROS.  00052908
+            EXEC SQL                                                    00053008
+              INCLUDE TBCURCLI                                          00053108
+            END-EXEC.                                                   00053208
+                                                                        00053308
+            EXEC SQL                                                    00053408
+              DECLARE TBCURCTA_CURSOR CURSOR                            00053508
+              FOR                                                       00053608
+              SELECT TIPCUEN,                                           00054010
+                     NROCUEN,                                           00054110
+                     SUCUEN,                                            00054210
+                     NROCLI,                                            00054310
+                     SALDO,                                             00054410
+                     FECSAL                                             00054510
+                 FROM KC02803.TBCURCTA                                  00054910
+                 ORDER BY TIPCUEN, NROCUEN                              00055108
+            END-EXEC.                                                   00055208
+                                                                        00055308
+      ********     CONTADOR DE LEIDOS Y GRABADOS  *                     00055400
+                                                                        00055500
+       77  WS-LEIDOS-NOVCTA        PIC 9(05)        VALUE ZEROS.        00055608
+       77  WS-LEIDOS-TBCURCTA      PIC 9(05)        VALUE ZEROS.        00055708
+       77  WS-LEIDOS-TBCURCLI      PIC 9(05)        VALUE ZEROS.        00055808
+       77  WS-ENCONTRADOS-NOVCTA   PIC 9(05)        VALUE ZEROS.        00055908
+       77  WS-ENCONTRADOS-TBCURCLI PIC 9(05)        VALUE ZEROS.        00056008
+       77  WS-NO-ENCON-NOVCTA      PIC 9(05)        VALUE ZEROS.        00056108
+       77  WS-NO-ENCON-TBCURCLI    PIC 9(05)        VALUE ZEROS.        00056208
+                                                                        00056308
+       01 WS-ACUM-SALDO       PIC S9(5)V9(2) USAGE COMP-3 VALUE ZEROS.  00058110
+       01 WS-MASC-SALDOS      PIC +$Z9,999.99       VALUE ZEROS.        00058211
+                                                                        00058308
+       77  FILLER        PIC X(26) VALUE '* FINAL  WORKING-STORAGE *'.  00058408
+                                                                        00058508
+      ***************************************************************.  00058608
+       PROCEDURE DIVISION.                                              00058708
+      **************************************                            00058808
+      *                                    *                            00058908
+      *  CUERPO PRINCIPAL DEL PROGRAMA     *                            00059008
+      *                                    *                            00059100
+      **************************************                            00059200
+       MAIN-PROGRAM.                                                    00060000
+           PERFORM 1000-INICIO   THRU   F-1000-INICIO.                  00060207
+                                                                        00060300
+           PERFORM 2000-PROCESO  THRU  F-2000-PROCESO                   00060400
+                   UNTIL WS-FIN-LECTURA                                 00060710
+                                                                        00060800
+           PERFORM 9999-FINAL    THRU  F-9999-FINAL.                    00061200
+                                                                        00061300
+       F-MAIN-PROGRAM. GOBACK.                                          00061400
+                                                                        00061500
+      **************************************                            00061600
+      *                                    *                            00061700
+      *  CUERPO INICIO APERTURA ARCHIVOS   *                            00061800
+      *                                    *                            00061900
+      **************************************                            00062000
+       1000-INICIO.                                                     00062100
+           SET WS-NO-FIN-LECTURA TO TRUE.                               00070200
+                                                                        00070510
+           OPEN INPUT  NOVCTA.                                          00071508
+           IF WS-NOVCTA-FS = '00'                                       00071608
+              PERFORM 2100-LEER-NOVCTA THRU F-2100-LEER-NOVCTA          00071709
+           ELSE                                                         00071804
+              DISPLAY '* ERROR EN OPEN NOVCTA   = ' WS-NOVCTA-FS        00071908
+              MOVE 9999 TO RETURN-CODE                                  00072000
+              SET  WS-FIN-LECTURA TO TRUE                               00072100
+           END-IF.                                                      00073000
+                                                                        00076600
+            EXEC SQL                                                    00076808
+              OPEN TBCURCTA_CURSOR                                      00076908
+            END-EXEC.                                                   00077008
+                                                                        00077108
+           IF SQLCODE = 0                                               00077208
+              PERFORM 2200-LEO-TBCURCTA                                 00077308
+                 THRU F-2200-LEO-TBCURCTA                               00077408
+           ELSE                                                         00077610
+              MOVE SQLCODE   TO WS-SQLCODE                              00077708
+              DISPLAY '* ERROR OPEN CURSOR      = ' WS-SQLCODE          00077808
+              MOVE 9999 TO RETURN-CODE                                  00077908
+              SET  WS-FIN-LECTURA TO TRUE                               00078008
+           END-IF.                                                      00078108
+       F-1000-INICIO.   EXIT.                                           00078300
+                                                                        00078400
+       2000-PROCESO.                                                    00079000
+           IF WS-NOVCTA-TIP-CUEN = WS-CURCTA-TIP-CUEN                   00079818
+           AND WS-NOVCTA-NROCUEN = WS-CURCTA-NROCUEN                    00079918
+               ADD 1 TO WS-ENCONTRADOS-NOVCTA                           00080008
+                                                                        00080108
+               PERFORM 2300-PROCESO-TBCURCLI                            00080208
+                  THRU F-2300-PROCESO-TBCURCLI                          00080308
+                                                                        00080410
+                  PERFORM 2100-LEER-NOVCTA                              00080512
+                     THRU F-2100-LEER-NOVCTA                            00080612
+                                                                        00080713
+               SET WS-NOV-ENCONTRADA TO TRUE                            00080813
+               SET WS-CUE-ENCONTRADA TO TRUE                            00080913
+           ELSE IF WS-NOVCTA-TIP-CUEN > WS-CURCTA-TIP-CUEN              00081118
+           OR (WS-NOVCTA-TIP-CUEN = WS-CURCTA-TIP-CUEN                  00081218
+              AND WS-NOVCTA-NROCUEN > WS-CURCTA-NROCUEN)                00081318
+               IF WS-NO-CUE-ENCONTRADA                                  00081513
+                 DISPLAY 'CUENTA SIN NOVEDAD NRO CLIENTE: ' WS-NROCLI   00081613
+                 ADD 1 TO WS-NO-ENCON-TBCURCLI                          00081713
+               END-IF                                                   00081813
+                                                                        00081913
+               SET WS-NO-CUE-ENCONTRADA TO TRUE                         00082013
+                                                                        00082113
+                                                                        00082210
+                  PERFORM 2200-LEO-TBCURCTA                             00082310
+                     THRU F-2200-LEO-TBCURCTA                           00082410
+           ELSE                                                         00082510
+               IF WS-NO-NOV-ENCONTRADA                                  00082613
+                 DISPLAY 'NOVEDAD NO ENCONTRADA NRO CLIENTE: ' NV-NROCLI00082713
+                 SET WS-NO-NOV-ENCONTRADA TO TRUE                       00082813
+               END-IF                                                   00082913
+                                                                        00083013
+                                                                        00083213
+               ADD 1 TO WS-NO-ENCON-NOVCTA                              00083413
+                                                                        00083510
+                  PERFORM 2100-LEER-NOVCTA                              00083610
+                     THRU F-2100-LEER-NOVCTA                            00083710
+           END-IF.                                                      00083810
+                                                                        00083912
+           EVALUATE TRUE                                                00084012
+               WHEN WS-NOVCTA-TIP-CUEN = HIGH-VALUE                     00084117
+                AND WS-NOVCTA-NROCUEN  = 99999                          00084217
+                AND WS-CURCTA-TIP-CUEN = HIGH-VALUE                     00084317
+                AND WS-CURCTA-NROCUEN  = 99999                          00084517
+                  SET WS-FIN-LECTURA TO TRUE                            00084612
+           END-EVALUATE.                                                00084712
+       F-2000-PROCESO. EXIT.                                            00084912
+                                                                        00085012
+      **************************************                            00085112
+      * LECTURA NOVCTA                     *                            00085212
+      **************************************                            00085312
+       2100-LEER-NOVCTA.                                                00085412
+           INITIALIZE WS-REG-NOVCTA.                                    00085617
+           READ NOVCTA INTO WS-REG-NOVCTA                               00085717
+                                                                        00085812
+           EVALUATE WS-NOVCTA-FS                                        00085912
+             WHEN '00'                                                  00086012
+              ADD 1 TO WS-LEIDOS-NOVCTA                                 00086212
+              MOVE NV-TIPCUEN TO WS-NOVCTA-TIP-CUEN                     00086413
+              MOVE NV-NROCUEN TO WS-NOVCTA-NROCUEN                      00086613
+              MOVE NV-NROCLI  TO WS-NOVCTA-NROCLI                       00086813
+              MOVE NV-SALDO   TO WS-NOVCTA-SALDO                        00087018
+                                                                        00087212
+             WHEN '10'                                                  00087312
+              MOVE HIGH-VALUE TO WS-NOVCTA-TIP-CUEN                     00087412
+              MOVE 99999      TO WS-NOVCTA-NROCUEN                      00087517
+                                                                        00087612
+           WHEN OTHER                                                   00087712
+              DISPLAY '* ERROR EN LECTURA NOVCTA   = ' WS-NOVCTA-FS     00087812
+              MOVE 9999 TO RETURN-CODE                                  00087912
+              SET WS-FIN-LECTURA TO TRUE                                00088012
+                                                                        00088112
+           END-EVALUATE.                                                00088212
+                                                                        00088512
+       F-2100-LEER-NOVCTA. EXIT.                                        00088612
+                                                                        00088712
+      **************************************                            00088812
+      * LECTURA BAJAS                      *                            00088912
+      **************************************                            00089012
+       2200-LEO-TBCURCTA.                                               00089112
+           INITIALIZE WS-REG-TBCURCTA.                                  00089212
+            EXEC SQL                                                    00089312
+              FETCH TBCURCTA_CURSOR                                     00089412
+              INTO :WS-TIPCUEN,                                         00089513
+                   :WS-NROCUEN,                                         00089613
+                   :WS-SUCUEN,                                          00089713
+                   :WS-NROCLI,                                          00089813
+                   :WS-SALDO,                                           00089913
+                   :WS-FECSAL                                           00090013
+            END-EXEC.                                                   00090112
+                                                                        00090212
+           EVALUATE TRUE                                                00090312
+             WHEN SQLCODE = 0                                           00090412
+                ADD 1 TO WS-LEIDOS-TBCURCTA                             00090512
+                                                                        00090612
+                MOVE WS-TIPCUEN TO WS-CURCTA-TIP-CUEN                   00090713
+                MOVE WS-NROCUEN TO WS-CURCTA-NROCUEN                    00090813
+                MOVE WS-NROCLI  TO WS-CURCTA-NROCLI                     00090913
+                MOVE WS-SALDO   TO WS-CURCTA-SALDO                      00091013
+                MOVE WS-SALDO   TO WS-ACUM-SALDO                        00091113
+                                                                        00091212
+             WHEN SQLCODE EQUAL +100                                    00091308
+                MOVE HIGH-VALUE TO WS-CURCTA-TIP-CUEN                   00091412
+                MOVE 99999      TO WS-CURCTA-NROCUEN                    00091517
+                                                                        00091612
+             WHEN OTHER                                                 00091712
+                MOVE SQLCODE TO WS-SQLCODE                              00091812
+                DISPLAY 'ERROR FETCH CURSOR: '   WS-SQLCODE             00091912
+                SET WS-FIN-LECTURA TO TRUE                              00092012
+           END-EVALUATE.                                                00092112
+                                                                        00092208
+       F-2200-LEO-TBCURCTA. EXIT.                                       00092309
+                                                                        00092400
+                                                                        00092700
+       2300-PROCESO-TBCURCLI.                                           00092808
+            EXEC SQL                                                    00092908
+                SELECT NOMAPE                                           00093008
+                INTO :WT-NOMAPE                                         00093108
+                FROM KC02803.TBCURCLI                                   00093208
+                WHERE NROCLI = :WS-NROCLI                               00093313
+            END-EXEC                                                    00093508
+                                                                        00093608
+            IF SQLCODE = 0                                              00093708
+                ADD  WS-NOVCTA-SALDO TO WS-ACUM-SALDO                   00093810
+                                                                        00095210
+                ADD 1 TO WS-ENCONTRADOS-TBCURCLI                        00095309
+            ELSE IF SQLCODE = 100                                       00095408
+              MOVE WS-ACUM-SALDO TO WS-MASC-SALDOS                      00095513
+                                                                        00095613
+              DISPLAY 'SE ACTUALIZO EL SALDO DE '                       00095713
+              DISPLAY '         TIPO DE CUENTA: ' WS-NOVCTA-TIP-CUEN    00095813
+              DISPLAY '       NUMERO DE CUENTA: ' WS-NOVCTA-NROCUEN     00095913
+              DISPLAY '      NUMERO DE CLIENTE: ' WS-NOVCTA-NROCLI      00096013
+              DISPLAY '        NOMBRE COMPLETO: ' WT-NOMAPE             00096113
+              DISPLAY '      EL NUEVO SALDO ES: ' WS-MASC-SALDOS        00096213
+                                                                        00096313
+              DISPLAY 'NOMBRE NO ENCONTRADO NRO CLIENTE: ' WS-NROCLI    00096413
+            ELSE                                                        00096508
+                MOVE SQLCODE TO WS-SQLCODE                              00096608
+                                                                        00096708
+                DISPLAY 'ERROR BUSCANDO CLIENTE '  WS-SQLCODE           00096808
+                 WT-TIPDOC ' ' WT-NRODOC                                00096908
+                                                                        00097008
+                SET WS-FIN-LECTURA TO TRUE                              00097109
+            END-IF.                                                     00097208
+       F-2300-PROCESO-TBCURCLI. EXIT.                                   00097308
+                                                                        00097408
+      **************************************                            00097500
+      *                                    *                            00097600
+      *  CUERPO FINAL CIERRE DE FILES      *                            00097700
+      *                                    *                            00097800
+      **************************************                            00097900
+       9999-FINAL.                                                      00098000
+                                                                        00098100
+           IF RETURN-CODE = 9999                                        00098205
+              CONTINUE                                                  00098307
+           ELSE                                                         00098407
+              CLOSE NOVCTA                                              00098508
+              IF WS-NOVCTA-FS IS NOT EQUAL '00'                         00098608
+                DISPLAY '* ERROR EN CLOSE NOVCTA   = '                  00098708
+                                         WS-NOVCTA-FS                   00098808
+                MOVE 9999 TO RETURN-CODE                                00098905
+              END-IF                                                    00099005
+                                                                        00099105
+              EXEC SQL CLOSE TBCURCTA_CURSOR END-EXEC                   00099209
+                                                                        00099308
+              IF SQLCODE NOT = 0                                        00099408
+                 DISPLAY 'ERROR EN CLOSE TB TBCURCTA_CURSOR' SQLCODE    00099508
+                 MOVE 9999 TO RETURN-CODE                               00099608
+              END-IF                                                    00099708
+                                                                        00099808
+              DISPLAY 'NOVEDADES LEIDAS:         ' WS-LEIDOS-NOVCTA     00099908
+              DISPLAY 'CUENTAS LEIDAS:           ' WS-LEIDOS-TBCURCTA   00100008
+              DISPLAY 'MATCH NOVEDAD Y CUENTA:   ' WS-ENCONTRADOS-NOVCTA00100108
+              DISPLAY 'SE ENCONTRO EL NOMBRE:    '                      00100208
+                                         WS-ENCONTRADOS-TBCURCLI        00100308
+              DISPLAY 'NOVEDADES NO ENCONTRADAS: ' WS-NO-ENCON-NOVCTA   00100408
+              DISPLAY 'NOMBRE NO ENCOTRADOS:     ' WS-NO-ENCON-TBCURCLI 00100508
+           END-IF.                                                      00100608
+                                                                        00101008
+       F-9999-FINAL. EXIT.                                              00110007
+      *                                                                 00200000

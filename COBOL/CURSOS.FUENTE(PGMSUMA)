@@ -1,0 +1,45 @@
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. PGMSUMA.
+       ENVIRONMENT DIVISION.
+       DATA DIVISION.
+      **************************************
+       WORKING-STORAGE SECTION.
+      **************************************
+       77  FILLER        PIC X(26) VALUE '* INICIO WORKING-STORAGE *'.
+
+      * VARIABLE PARA ALMACENAR NUMEROS DEL 1 AL 10
+       77  WS-INDBUCLE   PIC 99   VALUE ZEROS.
+
+      * VARIABLE PARA INDICAR EL LIMITE DEL BUCLE
+       77  WS-LIMSUMA    PIC 99   VALUE 10.
+
+      * VARIABLE PARA SUMAR LOS PRIMEROS 10 NúMEROS
+       77  WS-SUMA       PIC 9(3) COMP-3 VALUE ZEROS.
+
+      * VARIABLE PARA MOSTRAR SUMATORIA FINAL
+       77  WS-DISPLAY    PIC ZZ9         VALUE ZEROS.
+       77  FILLER        PIC X(26) VALUE '* FINAL  WORKING-STORAGE *'.
+
+      **************************************
+       PROCEDURE DIVISION.
+      **************************************
+       MAIN-PROGRAM.
+           PERFORM 2000-SUMO THRU F-2000
+           PERFORM 3000-FINALIZO THRU F-3000
+           .
+       F-MAIN-PROGRAM. GOBACK.
+      *
+       1000-SUMO.
+           PERFORM VARYING WS-INDBUCLE FROM 1 BY 1
+               UNTIL WS-INDBUCLE > WS-LIMSUMA
+               ADD WS-INDBUCLE TO WS-SUMA
+           END-PERFORM
+           .
+       F-1000. EXIT.
+      *
+       2000-FINALIZO.
+           MOVE WS-SUMA TO WS-DISPLAY
+           DISPLAY 'RESULTADO: ' WS-DISPLAY
+           .
+       F-2000. EXIT.
+
