@@ -1,6 +1,0 @@
-       IDENTIFICATION DIVISION.                                         00670002
-       PROGRAM-ID. HOLMUNDO.                                            00680002
-       PROCEDURE DIVISION.                                              02400002
-           DISPLAY 'HOLA MUNDO'                                         02410002
-                                                                        02420002
-           STOP RUN.                                                    02430002

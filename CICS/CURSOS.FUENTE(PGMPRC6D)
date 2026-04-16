@@ -1,5 +1,15 @@
        IDENTIFICATION DIVISION.                                         00010006
        PROGRAM-ID. PGMPRC6D.                                            00020010
+      *ESTE PROGRAMA CICS BUSCA Y PRESENTA LOS DATOS DEL USUARIO
+      *LLAMADO POR TIPO DE DOCUMENTO Y NRO DE DOCUMENTO.
+
+      *REALIZA LA CONSULTA A UN ARCHIVO PLANO
+      
+      *UTILIZA EL MAPA MAP1C6D
+      *SE RETORNA EL CONTROL A S√ç MISMO TRAS REALIZAR LA
+      *ACCION O AL PGMMEC6D SI SE PRESIONA PF12.
+
+      *RECIBE DATOS POR LA COMMAREA A TRAVEZ DE LA LINKAGE SECTION.
        DATA DIVISION.                                                   00030006
        FILE SECTION.                                                    00040006
        WORKING-STORAGE SECTION.                                         00050006
@@ -11,7 +21,7 @@
              05 CT-MNS-02         PIC X(72) VALUE                       00110006
                             'DATOS INGRESADOS INCORRECTOS - REINGRESE'. 00120006
              05 CT-MNS-03         PIC X(72) VALUE                       00130006
-                    'TIPO Y N⁄MERO DOCUMENTO INEXISTENTES - REINGRESE'. 00140006
+                    'TIPO Y NÔøΩMERO DOCUMENTO INEXISTENTES - REINGRESE'. 00140006
              05 CT-MNS-04         PIC X(72) VALUE                       00150006
                             'TIPO DE DOCUMENTO INVALIDO'.               00160006
              05 CT-MNS-05         PIC X(72) VALUE                       00170006

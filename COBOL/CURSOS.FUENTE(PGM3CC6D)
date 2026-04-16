@@ -1,21 +1,8 @@
        IDENTIFICATION DIVISION.
       *                                                        *
         PROGRAM-ID PGM3CC6D.
-      **********************************************************
-      *                                                        *
-      *  ABRIL 2025  PROGRAMA CON DECLARACION DE ARCHIVOS      *
-      *                                                        *
-      **********************************************************
-      *      MANTENIMIENTO DE PROGRAMA                         *
-      **********************************************************
-      *  FECHA   *    DETALLE        * COD *
-      **************************************
-      *23/10/2025*SUM SALDO A 'DU'   *     *
-      *          *                   *     *
-      *          *                   *     *
-      *          *                   *     *
-      *          *                   *     *
-      **************************************
+      *ESTE PROGRAMA LEE UN ARCHIVO PLANO, Y SUMA LOS SALDOS DE
+      *DOCUMENTOS DE TIPO "DU" PARA MOSTRARLOS POR DISPLAY EN EL SPOOL
        ENVIRONMENT DIVISION.
        CONFIGURATION SECTION.
        SPECIAL-NAMES.
@@ -85,7 +72,6 @@
            SET WS-NO-FIN-CLI TO TRUE.
 
            OPEN INPUT  CLIENTE.
-
 
            IF WS-FILE-CLI IS NOT EQUAL '00'
               DISPLAY '* ERROR EN OPEN ARCHIVO CLIENTE = ' WS-FILE-CLI

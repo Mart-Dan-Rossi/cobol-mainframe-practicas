@@ -1,18 +1,11 @@
-**********************************************************        
-*                                                        *        
-*  PARA VER DEFINICION ARCHIVO VSAM KSDS                 *        
-*  ACCESO SECUENCIAL                                     *        
-*                                                        *        
-**********************************************************        
-*      MANTENIMIENTO DE PROGRAMA                         *        
-**********************************************************        
-*  FECHA   *    DETALLE        * COD *                            
-**************************************                            
-*          *                   *     *                            
-*          *                   *     *                            
-**************************************                            
- IDENTIFICATION DIVISION.                                         
- PROGRAM-ID PGMB2C6D.                                             
+IDENTIFICATION DIVISION.                                         
+
+PROGRAM-ID PGMB2C6D. 
+
+*ESTE PROGRAMA ACCEDE A UN ARCHIVO PLANO INDEXADO PARA 
+*AGREGAR REGISTROS A UN SQL. SI EL REGISTRO YA EXISTE,
+*LO INFORMA POR DISPLAY.
+
  ENVIRONMENT DIVISION.                                            
  CONFIGURATION SECTION.
  SPECIAL-NAMES.

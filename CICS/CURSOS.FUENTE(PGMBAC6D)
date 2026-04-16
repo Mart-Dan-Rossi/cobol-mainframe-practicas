@@ -1,5 +1,11 @@
        IDENTIFICATION DIVISION.                                         00010000
        PROGRAM-ID. PGMBAC6D.                                            00020010
+      *PROGRAMA DE CICS QUE DA DE BAJA USUARIOS EN UN ARCHIVO PLANO.
+      *UTILIZA EL MAPA MAP4C6D
+      *Y SE RETORNA EL CONTROL A S√ç MISMO TRAS REALIZAR LA
+      *ACCION O AL PGMMEC6D SI SE PRESIONA PF12.
+
+      *RECIBE DATOS POR LA COMMAREA A TRAVEZ DE LA LINKAGE SECTION.
        DATA DIVISION.                                                   00030000
        FILE SECTION.                                                    00040000
        WORKING-STORAGE SECTION.                                         00050000
@@ -11,7 +17,7 @@
              05 CT-MNS-02         PIC X(72) VALUE                       00110000
                             'CLIENTE DADO DE BAJA CORRECTAMENTE'.       00120000
              05 CT-MNS-03         PIC X(72) VALUE                       00130000
-                    'TIPO Y N⁄MERO DOCUMENTO INEXISTENTES - REINGRESE'. 00140000
+                    'TIPO Y NÔøΩMERO DOCUMENTO INEXISTENTES - REINGRESE'. 00140000
              05 CT-MNS-04         PIC X(72) VALUE                       00150000
                     'TIPO DE DOCUMENTO INVALIDO - INGRESE DU, PA O PE'. 00160000
              05 CT-MNS-05         PIC X(72) VALUE                       00170000
@@ -26,7 +32,7 @@
              05 CT-MNS-10         PIC X(72) VALUE                       00260000
            'SELECCIONE UN CLIENTE PARA PODER DARLO DE BAJA'.            00270000
              05 CT-MNS-EXIT       PIC X(72) VALUE                       00280000
-                            'FIN TRANSACCION T415'.                     00290000
+                            'FIN TRANSACCION EC6D'.                     00290000
           03 CT-DATASET           PIC X(08)  VALUE 'PERSOC6D'.          00300011
           03 CT-DATASET-LEN       PIC S9(04) COMP VALUE 160.            00310000
                                                                         00320000

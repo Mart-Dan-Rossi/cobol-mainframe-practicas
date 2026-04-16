@@ -1,5 +1,10 @@
        IDENTIFICATION DIVISION.                                         00010000
        PROGRAM-ID. PGMALC6D.                                            00020014
+      *PROGRAMA CICS QUE UTILIZA EL MAPA "MAP3C6D" PARA DAR DE ALTA
+      *USUARIOS EN UN ARCHIVO PLANO. LUEGO DE HACERLO RETORNA EL CONTROL
+      *A SÍ MISMO AL TERMINAR LA ACCION O AL PGMMEC6D AL APRETAR PF12.
+
+      *RECIBE DATOS POR COMMAREA A TRAVEZ DE LA LINKAGE SECTION
        DATA DIVISION.                                                   00030000
        FILE SECTION.                                                    00040000
        WORKING-STORAGE SECTION.                                         00050000

@@ -1,19 +1,22 @@
        IDENTIFICATION DIVISION.                                         00010000
       *                                                        *        00010500
         PROGRAM-ID PGMB6C6D.                                            00011008
-      **********************************************************        00012000
-      *                                                        *        00013000
-      *  PROGRAMA PARA VSAM KSDS                               *        00014000
-      **********************************************************        00017400
-      *      MANTENIMIENTO DE PROGRAMA                         *        00018000
-      **********************************************************        00019000
-      *  FECHA   *    DETALLE                            * COD *        00019102
-      **********************************************************        00019202
-      *          *                                       *     *        00019308
-      *          *                                       *     *        00019408
-      *          *                                       *     *        00019508
-      *          *                                       *     *        00019602
-      **********************************************************        00019702
+      
+      *ESTE PROGRAMA RECORRE UN ARCHIVO PLANO DE NOVEDADES Y
+      *UN CURSOR DE UNA TABLA DE CUENTAS PARA APAREARLAS.
+
+      *SI SE ENCUENTRA UNA MATCH DE NOVEDAD Y CUENTA SE FIJA SI EL
+      *REGISTRO HACE MATCH CON ALGUNO DE UNA TERCERA TABLA.
+
+      *SI EXISTE EL MATCH SE AGREGA A UN CONTADOR. SI NO EXISTE MATCH SE
+      *INFORMA POR DISPLAY.
+
+      *SI NO SE ENCUENTRA MATCH EN NOVEDAD Y CUENTA SE INFORMA POR
+      *DISPLAY Y SE AGREGA A OTRO CONTADOR.
+
+      *AL FINAL SE MUESTRAN LOS TOTALES DE CONTROL INFORMANDO TAMBIEN
+      *LA CANTIDAD DE MATCH Y NO MATCH QUE HUVO DE CADA CASO
+
        ENVIRONMENT DIVISION.                                            00020000
        CONFIGURATION SECTION.                                           00020100
        SPECIAL-NAMES.                                                   00020200
@@ -173,8 +176,8 @@
                PERFORM 2300-PROCESO-TBCURCLI                            00080208
                   THRU F-2300-PROCESO-TBCURCLI                          00080308
                                                                         00080410
-                  PERFORM 2100-LEER-NOVCTA                              00080512
-                     THRU F-2100-LEER-NOVCTA                            00080612
+               PERFORM 2100-LEER-NOVCTA                                 00080512
+                  THRU F-2100-LEER-NOVCTA                               00080612
                                                                         00080713
                SET WS-NOV-ENCONTRADA TO TRUE                            00080813
                SET WS-CUE-ENCONTRADA TO TRUE                            00080913

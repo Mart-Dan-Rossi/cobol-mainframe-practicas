@@ -1,18 +1,10 @@
        IDENTIFICATION DIVISION.                                         00002000
       *                                                        *        00003000
        PROGRAM-ID. PGMB2C6D.                                            00004004
-      **********************************************************        00005000
-      *                                                        *        00006000
-      *  PROGRAMA PARA SQL EMBEBIDO                            *        00007000
-      *                                                        *        00016500
-      **********************************************************        00016800
-      *      MANTENIMIENTO DE PROGRAMA                         *        00016900
-      **********************************************************        00017000
-      *  FECHA   *    DETALLE        * COD *                            00018000
-      **************************************                            00019000
-      *          *                   *     *                            00019100
-      *          *                   *     *                            00019200
-      **************************************                            00019300
+      *ESTE PROGRAMA CREA UN CURSOR EN EL QUE SE TRAE LA CANTIDAD
+      *DE USUARIOS CUYO SALDO SEA MAYOR A 0.
+
+      *POR DISPLAY MUESTRA LOS DATOS 
        ENVIRONMENT DIVISION.                                            00019400
        CONFIGURATION SECTION.                                           00019500
        SPECIAL-NAMES.                                                   00019600

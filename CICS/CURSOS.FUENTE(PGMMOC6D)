@@ -1,5 +1,11 @@
        IDENTIFICATION DIVISION.                                         00010000
        PROGRAM-ID. PGMMOC6D.                                            00020009
+      *ESTE PROGRAMA CICS GENERA MODIFICACIONES EN UN ARCHIVO PLANO.
+      *UTILIZA EL MAPA MAP5C6D
+      *SE RETORNA EL CONTROL A SÍ MISMO TRAS REALIZAR LA
+      *ACCION O AL PGMMEC6D SI SE PRESIONA PF12.
+
+      *RECIBE DATOS POR LA COMMAREA A TRAVEZ DE LA LINKAGE SECTION.
        DATA DIVISION.                                                   00030000
        FILE SECTION.                                                    00040000
        WORKING-STORAGE SECTION.                                         00050000
@@ -391,8 +397,7 @@
               END-EVALUATE                                              03680402
                                                                         03680502
            MOVE TIPDOCI      TO PER-TIP-DOC.                            03681000
-           MOVE NUMDOCI      TO PER-NRO-DOC.                            03690000
-           MOVE ZEROS        TO PER-CLI-NRO.                            03700000
+           MOVE NUMDOCI      TO PER-NRO-DOC.                            03700000
            MOVE NOMAPEI      TO PER-NOMAPE                              03710000
            MOVE ANIOI        TO WS-ANIO                                 03720000
            MOVE MESI         TO WS-MES                                  03730000

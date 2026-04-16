@@ -2,18 +2,18 @@
        IDENTIFICATION DIVISION.                                         00002000
       *                                                        *        00003000
        PROGRAM-ID. PGMB3C6D.                                            00004007
-      **********************************************************        00005000
-      *                                                        *        00006000
-      *  PROGRAMA PARA SQL EMBEBIDO                            *        00007000
-      *                                                        *        00016500
-      **********************************************************        00016800
-      *      MANTENIMIENTO DE PROGRAMA                         *        00016900
-      **********************************************************        00017000
-      *  FECHA   *    DETALLE        * COD *                            00018000
-      **************************************                            00019000
-      *          *                   *     *                            00019100
-      *          *                   *     *                            00019200
-      **************************************                            00019300
+      *PROGRAMA QUE RECORRE UN ARCHIVO DE NOVEDADES. SE REALIZAN
+      *VALIDACIONES. EN EL ARCHIVO DE NOVEDADES SE INDICA CUAL ES EL
+      *TIPO DE NOVEDAD A GESTIONAR CON CADA REGISTRO.
+
+      *PUEDE SER UNA ALTA O UNA MODIFICACION.
+
+      *EN CASO DE QUE SE HAYE ALGUN INCONVENIENTE SE INFORMA EN UNA
+      *TABLA CREADA EN UN ARCHIVO DE SALIDA.
+
+      *SI NO HAY INCONVENIENTES SE REALIZA LA OPERACION REQUERIDA EN
+      *CADA NOVEDAD IMPACTANDO EN UNA TABLA CON SQL.
+      
        ENVIRONMENT DIVISION.                                            00019400
        CONFIGURATION SECTION.                                           00019500
        SPECIAL-NAMES.                                                   00019600

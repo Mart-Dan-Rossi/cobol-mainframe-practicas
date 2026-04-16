@@ -1,7 +1,11 @@
        IDENTIFICATION DIVISION.                                         00010000
       *                                                        *        00010100
-        PROGRAM-ID PGM1COR1.                                            00010201
-      *                                                        *        00010300
+        PROGRAM-ID PGM1COR1.
+
+      *ESTE PROGRAMA REALIZA UN CORTE DE CONTROL SIMPLE A PARTIR DE UN
+      *ARCHIVO PLANO DE CLIENTES. E IMPRIME POR DISPLAY (VISUALIZA POR
+      *SPOOL).
+      
        ENVIRONMENT DIVISION.                                            00019100
       *                                                        *        00019200
        CONFIGURATION SECTION.                                           00019300

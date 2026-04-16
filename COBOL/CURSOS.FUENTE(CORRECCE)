@@ -1,7 +1,23 @@
        IDENTIFICATION DIVISION.                                         00010000
       *                                                        *        00010100
-        PROGRAM-ID PGMFBC6D.                                            00010201
-      *                                                        *        00010300
+        PROGRAM-ID PGMFBC6D.
+                                                    00010201
+      *ESTE PROGRAMA CONSULTA EL SQL TRAYENDO UN CURSOR QUE TIENE
+      *DATOS DE CUENTAS DE USUARIOS QUE HAYAN CREADO LA CUENTA
+      *ANTES DEL 2025-06-05.
+      
+      *CON ESOS DATOS CREA UN ARCHIVO DE SALIDA REALIZANDO UN DOBLE
+      *CORTE DE CONTROL.
+      *EL CORTE MAYOR ES POR SUCURSAL DE LAS CUENTAS Y
+      *EL CORTE MENOR ES POR TIPO DE CUENTA.
+      
+      *SE SOLICITO QUE EL SALTO DE PAGINA SEA CADA 20 LINEAS.
+      *TAMBIEN CONSIDERA QUE HAYA SUFICIENTE ESPACIO PARA QUE
+      *SE VEA EL ENCABEZADO CON POR LO MENOS UN DATO ANTES DE
+      *UN NUEVO SALTO.
+
+
+                                                                     00010300
        ENVIRONMENT DIVISION.                                            00019100
       *                                                        *        00019200
        CONFIGURATION SECTION.                                           00019300
@@ -123,14 +139,14 @@
           03  FILLER               PIC X(12)    VALUE
                                                         'TIPO CUENTA|'.
           03  FILLER               PIC X(09)    VALUE
-                                                           'N∞CUENTA|'.
+                                                           'NÔøΩCUENTA|'.
           03  FILLER               PIC X(10)    VALUE
-                                                          'N∞CLIENTE|'.
+                                                          'NÔøΩCLIENTE|'.
           03  FILLER               PIC X(11)    VALUE
                                                          '  SALDO   |'.
 
        01 WS-REG-SALIDA.
-          03  FILLER               PIC X(04)    VALUE           SPACES.
+          03  FILLER                      PIC X(04)    VALUE           SPACES.
           03  WS-SALIDA-TIPCUEN    PIC X(02)       VALUE        SPACES.
           03  FILLER               PIC X(09)       VALUE        SPACES.
           03  FILLER               PIC X           VALUE           '|'.
@@ -205,7 +221,8 @@
            MOVE WS-FECHA-DD TO WS-TITULO-DIA
 
            MOVE 'T' TO WS-BANDERA-PPIO
-
+      *REALIZO OPERACIONES PARA GESTIONAR MAS FACILMENTE LOS SALTOS DE
+      *PAGINAS LUEGO.
            SUBTRACT 1 FROM WS-MAX-LINEAS
            SUBTRACT 1 FROM WS-MAX-LINEAS-CABEZ
 
@@ -219,9 +236,10 @@
 
            PERFORM 9000-VAL-SAL-FS
               THRU F-9000-VAL-SAL-FS
+      *INICIALIZO EN 1 EL CONTADOR DE LINEAS
+           MOVE 1 TO WS-CUENTA-LINEA
 
-           ADD 1 TO WS-CUENTA-LINEA
-
+      *SI VIENE SIN ERRORES INTENTO ABRIR EL CURSOR
            IF WS-NO-FIN
                EXEC SQL
                  OPEN CURSOR-CTA
@@ -231,11 +249,14 @@
               PERFORM 10000-SQL-OP-CL-CODE
                  THRU F-10000-SQL-OP-CL-CODE
            END-IF
-                                                                        00390000
+                                                   
+      *SI SEGUIMOS SIN ERRORES HAGO LA PRIMERA LECTURA PARA ENTRAR
+      *AL PROGRAMA CON DATOS LEIDOS.
            IF WS-NO-FIN                                                 00391000
               PERFORM 2500-LEER     THRU F-2500-LEER                    00400000
-           END-IF                                                       00420000
-
+           END-IF         
+  
+      *Y SI SEGUIMOS BIEN IMPRIMO LOS ENCABEZADOS POR PRIMERA VEZ
            IF RETURN-CODE NOT EQUAL 9999
               IF WS-NO-FIN                                                 00421
                  MOVE WS-TIPCUEN      TO WS-CORTE-MEN-ANT                  00421
@@ -258,17 +279,23 @@
       *                                    *                            00480000
       **************************************                            00490000
        2000-PROCESO.                                                    00500000
+      *SI EL DATO ACTUAL PERTENECE AL MISMO CORTE MAYOR QUE EL ANTERIOR
            IF WS-SUCUEN = WS-CORTE-MAY-ANT                              00620000
+      *Y EL DATO ACTUAL PERTENECE AL MISMO CORTE MENOR QUE EL ANTERIOR
               IF WS-TIPCUEN = WS-CORTE-MEN-ANT                          00620000
                  ADD WS-SALDO TO WS-TOTAL-CMEN                          00421000
                  ADD 1        TO WS-CUENTA-CMEN                         00421000
-              ELSE                                                      00620000
+              ELSE
+      *SI PERTENECE AL MISMO CORTE MAYOR PERO OTRO MENOR
                  PERFORM 2700-CORTE-MENOR THRU F-2700-CORTE-MENOR       00620000
               END-IF                                                    00620000
            ELSE                                                         00620000
+      *SI NO PERTENECE AL MISMO CORTE MAYOR
               PERFORM 2600-CORTE-MAYOR THRU F-2600-CORTE-MAYOR          00620000
            END-IF                                                       00620000
-
+      
+      *EN CUALQUIERA DE LOS CASOS ANTERIORES, SIEMPRE QUIERO IMPRIMIR EL
+      *REGISTRO LEIDO Y PASAR AL SIGUIENTE
            PERFORM 6000-IMP-REGISTRO
               THRU F-6000-IMP-REGISTRO
                                                                         00620000
@@ -291,17 +318,22 @@
             END-EXEC.
                                                                         00830000
            EVALUATE TRUE
+      *SE LEE CON EXITO
              WHEN SQLCODE EQUAL ZEROS
                 ADD 1 TO WS-CANT-LEIDOS                                 00730000
-
+      
+      *SI ACABA EL CURSOR
              WHEN SQLCODE EQUAL 100
                   SET WS-ULTIMA-ITERACION TO TRUE
                   SET WS-FIN      TO TRUE                               00750000
+      *Y SE LLEGO A LEER ALGUN DATO
                   IF WS-CANT-LEIDOS > 0
                      PERFORM 2600-CORTE-MAYOR THRU F-2600-CORTE-MAYOR   00620000
+      *SI NO SE LEYO NINGUNO
                   ELSE
                      DISPLAY 'LA TABLA NO TIENE DATOS'                     00421
                   END-IF
+      *SI SUCEDE UN ERROR
              WHEN OTHER
                   MOVE 'ERROR FETCH CUR-CLI: '
                                               TO WS-TITULO-ERROR
@@ -321,11 +353,16 @@
 
            PERFORM 2610-IMPRIMO-CORTE-MAYOR
               THRU F-2610-IMPRIMO-CORTE-MAYOR
-
+      
+      *ACTUALIZO EL VALOR POR EL CUAL COMPARAR EL SIGUIENTE REGISTRO
            MOVE WS-SUCUEN TO WS-CORTE-MAY-ANT
            MOVE 0 TO WS-TOTAL-CMAY
-
+      
+      *SI AUN QUEDAN REGISTROS POR LEER VUELVO A IMPRIMIR ENCABEZADOS
            IF WS-NO-ULTIMA-ITERACION
+      *ESTA BANDERA SE USA PARA QUE SE CONSIERE AL HACER EL SALTO DE PAG
+      *SI VA A HABER ESPACIO SUFICIENTE PARA QUE HAYA AL MENOS UN
+      *REGISTRO LUEOGO DE LOS TITULOS ANTES DE QUE SE ACABE LA PAG NUEVA
               SET WS-ES-SALTO-ALT TO TRUE
 
               PERFORM 8000-IMP-ENCABEZ-SUC
@@ -340,6 +377,7 @@
        F-2600-CORTE-MAYOR. EXIT.                                        00840000
 
        2610-IMPRIMO-CORTE-MAYOR.                                        00840000
+      *ELIMINO DATOS BASURA
            INITIALIZE WS-RENGLON-CORTE-MAYOR
 
            MOVE WS-CUENTA-CMAY TO WS-RENGLON-CMAY-CANT
@@ -357,7 +395,8 @@
        2700-CORTE-MENOR.                                                00620000
            PERFORM 2710-IMPRIMO-CORTE-MENOR
               THRU F-2710-IMPRIMO-CORTE-MENOR
-
+      
+      *ACTUALIZO EL VALOR POR EL CUAL COMPARAR EL PROXIMO REGISTRO
            MOVE WS-TIPCUEN    TO WS-CORTE-MEN-ANT
 
            ADD WS-TOTAL-CMEN  TO WS-TOTAL-CMAY
@@ -379,7 +418,7 @@
               WHEN 03
                  MOVE 'PLAZO FIJO' TO WS-RENGLON-CMEN-NOMBRE
               WHEN OTHER
-                 DISPLAY 'TIPO DE CUENTA ERRÛNEA'
+                 DISPLAY 'TIPO DE CUENTA ERRONEA'
            END-EVALUATE
 
            MOVE WS-TOTAL-CMEN TO WS-RENGLON-CMEN-SALDO
@@ -438,17 +477,27 @@
        8500-IMPACTO-IMPR.
            MOVE 'GR' TO WS-OP-GR-CL-FS
 
+      *SI ES NECESARIO UN SALTO DE LINEA
            IF WS-CUENTA-LINEA > WS-MAX-LINEAS
             OR (
                 WS-ES-SALTO-ALT
             AND WS-CUENTA-LINEA > WS-MAX-LINEAS-CABEZ
                )
+      *COMO EN EL 7000-IMP-TITULOS PISO LOS DATOS DEL REG-SALIDA
+      *GUARDO LOS DATOS EN UNA VARIABLE TEMPORAL
               MOVE REG-SALIDA TO WS-GUARDO-DATOS-IMPRESION
+      *LIMPIO LA SALIDA
+              MOVE SPACES TO REG-SALIDA
 
               PERFORM 7000-IMP-TITULOS
                  THRU F-7000-IMP-TITULOS
-
+      
+      *RESETEO BANDERA TRAS SU UTILIZACION
+              SET WS-NO-ES-SALTO-ALT TO TRUE
+      *RECUPERO LOS DATOS DE LA VARIABLE TEMPORAL
               MOVE WS-GUARDO-DATOS-IMPRESION TO REG-SALIDA
+      *LIMPIO VARIABLE TEMPORAL
+              MOVE SPACES TO WS-GUARDO-DATOS-IMPRESION
            END-IF
 
            ADD 1 TO WS-CUENTA-LINEA
@@ -456,10 +505,8 @@
            WRITE REG-SALIDA
            PERFORM 9000-VAL-SAL-FS
               THRU F-9000-VAL-SAL-FS
-
-           MOVE SPACES TO WS-GUARDO-DATOS-IMPRESION
-           SET WS-NO-ES-SALTO-ALT TO TRUE
-
+              
+      *LIMPIO LA SALIDA
            MOVE SPACES TO REG-SALIDA
 
            MOVE 'GR' TO WS-OP-GR-CL-FS
@@ -468,6 +515,7 @@
               PERFORM 7000-IMP-TITULOS
                  THRU F-7000-IMP-TITULOS
            ELSE
+      *IMPRIMO RENGLON EN BLANCO (REQUERIDO EN ESPECIFICACIONES DEL PGM)     
               WRITE REG-SALIDA
               PERFORM 9000-VAL-SAL-FS
                  THRU F-9000-VAL-SAL-FS
@@ -478,7 +526,9 @@
        F-8500-IMPACTO-IMPR. EXIT.
 
        9000-VAL-SAL-FS.                                                 00850000
+      *SI HAY UN ERROR AL INTERACTUAR CON EL ARCHIVO DE SALIDA  
            IF WS-FILE-SAL IS NOT EQUAL '00'
+      *EVALUA CU√ÅL ERA EL TIPO DE INTERACCION     
              IF WS-OP-GR-CL-FS = 'OP'
                MOVE 'ERROR ABRIENDO ARCHIVO SALIDA: ' TO WS-TITULO-ERROR
              ELSE IF WS-OP-GR-CL-FS = 'GR'
@@ -486,6 +536,8 @@
              ELSE IF WS-OP-GR-CL-FS = 'CL'
                MOVE 'ERROR CERRANDO ARCHIVO SALIDA: ' TO WS-TITULO-ERROR
              ELSE
+      *EVITA QUE SE LLAME LA FUNCION SIN HABER ASIGNADO VALOR A
+      *LA VARIABLE DE CONTROL (PREVENSION DE ERRORES FUTUROS)       
                MOVE 'FALTA WS-OP-GR-CL-FS EN OP O CL DE SALIDA'
                                                       TO WS-TITULO-ERROR
              END-IF
@@ -500,7 +552,7 @@
            ELSE
              ADD 1 TO WS-CANT-IMPRESOS
            END-IF
-
+      *LIMPIO VARIABLE PARA ASEGURAR QUE TOME DATOS CARGADOS A POSTERIOR
            INITIALIZE WS-OP-GR-CL-FS
            .
        F-9000-VAL-SAL-FS. EXIT.
@@ -569,7 +621,7 @@
            END-IF.
 
            DISPLAY '***************************************************'
-           DISPLAY '* °ERROR! PGM: ZPGMEXAM * FECHA: '
+           DISPLAY '* ÔøΩERROR! PGM: CORRECCE * FECHA: '
                                             WS-TITULO-FECHA '     *'
            DISPLAY '***************************************************'
            IF WS-DATO-ERROR = SPACES
