@@ -1,12 +1,9 @@
        IDENTIFICATION DIVISION.                                         00010019
       *                                                        *        00020019
         PROGRAM-ID PGMEJEM1.                                            00030019
-      **********************************************************        00040019
-      *                                                        *        00050019
-      *  OBJETIVO: PR·CTICA CODIFICACIÛN COBOL                 *        00060019
-      *                                                        *        00070019
-      *                                                        *        00080019
-      **********************************************************        00090019
+      *ESTE PTROGRAMA TOMA UN ARCHIVO PLANO DE SUCURSALES Y A PARTIR
+      *DE ESTE CREA 2 ARCHIVOS PLANOS QUE CONTIENEN TODA LA MISMA INFO
+      *PERO SEGREGADA BINARIAMENTE POR GENERO 
        ENVIRONMENT DIVISION.                                            00100019
        INPUT-OUTPUT SECTION.                                            00110019
        FILE-CONTROL.                                                    00120019

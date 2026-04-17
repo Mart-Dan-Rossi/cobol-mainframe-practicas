@@ -1,7 +1,12 @@
        IDENTIFICATION DIVISION.                                         00010000
       *                                                        *        00010100
         PROGRAM-ID PGMFBC6D.                                            00010201
-      *                                                        *        00010300
+      *ESTE PRORGAMA CONSULTA DB2 CREANDO UN CURSOR DONDE ESTAN
+      *TODAS LAS CUENTAS QUE FUERON CREADAS ANTES DEL 2025-06-05.
+      
+      *RECORRE EL CURSOR PARA CREAR UN DOBLE CORTE DE CONTROL
+      *(POR SUCURSAL Y TIPO DE CUENTA). EL CORTE DE CONTROL SE IMPRIME
+      *EN UN ARCHIVO DE SALIDA. SALTO DE PAGINA CADA 20 LINEAS.                                                       *        00010300
        ENVIRONMENT DIVISION.                                            00019100
       *                                                        *        00019200
        CONFIGURATION SECTION.                                           00019300
@@ -109,9 +114,9 @@
           03  FILLER               PIC X(12)    VALUE
                                                         'TIPO CUENTA|'.
           03  FILLER               PIC X(09)    VALUE
-                                                           'N°CUENTA|'.
+                                                           'Nï¿½CUENTA|'.
           03  FILLER               PIC X(10)    VALUE
-                                                          'N°CLIENTE|'.
+                                                          'Nï¿½CLIENTE|'.
           03  FILLER               PIC X(11)    VALUE
                                                          '  SALDO   |'.
 
@@ -350,7 +355,7 @@
               WHEN 03
                  MOVE 'PLAZO FIJO' TO WS-RENGLON-CMEN-NOMBRE
               WHEN OTHER
-                 DISPLAY 'TIPO DE CUENTA ERRóNEA'
+                 DISPLAY 'TIPO DE CUENTA ERRï¿½NEA'
            END-EVALUATE
 
            MOVE WS-TOTAL-CMEN TO WS-RENGLON-CMEN-SALDO
@@ -558,7 +563,7 @@
            END-IF.
 
            DISPLAY '***************************************************'
-           DISPLAY '* ¡ERROR! PGM: ZPGMEXAM * FECHA: '
+           DISPLAY '* ï¿½ERROR! PGM: ZPGMEXAM * FECHA: '
                                             WS-TITULO-FECHA '     *'
            DISPLAY '***************************************************'
            IF WS-DATO-ERROR = SPACES

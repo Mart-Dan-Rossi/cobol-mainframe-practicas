@@ -4,15 +4,9 @@
       **********************************************************        00040000
       *                                                        *        00050000
       *  PROGRAMA LISTADOR                                     *        00060000
-      *                                                        *        00070000
+      *  RECORRE UN ARHIVO PLANO DE ENTRADA PARA GRABAR EN UN LISTADO
+      *  EN UN ARCHIVO PLANO. SALTO DE PAGINA CADA 60 LINEAS.                                                      *        00070000
       **********************************************************        00080000
-      *      MANTENIMIENTO DE PROGRAMA                         *        00090000
-      **********************************************************        00100000
-      *  FECHA   *    DETALLE        * COD *                            00110000
-      **************************************                            00120000
-      *          *                   *     *                            00130000
-      *          *                   *     *                            00140000
-      **************************************                            00150000
        ENVIRONMENT DIVISION.                                            00160000
        CONFIGURATION SECTION.                                           00170000
        SPECIAL-NAMES.                                                   00180000
@@ -94,7 +88,7 @@
            03  WS-SUC-SALDO3       PIC ZZZZ.ZZ9,99-   VALUE ZEROS.      00940000
            03  FILLER              PIC X(01)    VALUE SPACES.           00950000
                                                                         00960000
-      * ULTIMA LINEA POR PáGINA 60                                      00970000
+      * ULTIMA LINEA POR Pï¿½GINA 60                                      00970000
        77  WS-CUENTA-LINEA         PIC 9(02)    VALUE ZEROS.            00980000
        77  WS-CUENTA-PAGINA        PIC 9(02)    VALUE 01.               00990000
                                                                         01000000

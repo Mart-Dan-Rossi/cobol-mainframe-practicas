@@ -1,7 +1,7 @@
        IDENTIFICATION DIVISION.                                         00010000
       *                                                        *        00010100
         PROGRAM-ID PGMCCC6D.                                            00010201
-      *                                                        *        00010300
+      *PROGRAMA CREADO COMO MOLDE PARA EXAMEN DE CORTE SIMPLE DE CONTROL                                                                00010300
        ENVIRONMENT DIVISION.                                            00019100
       *                                                        *        00019200
        CONFIGURATION SECTION.                                           00019300

@@ -3,8 +3,10 @@
         PROGRAM-ID PGMVAC6D.                                            00030020
       **********************************************************        00040019
       *                                                        *        00050019
-      *  OBJETIVO: PRáCTICA CODIFICACIóN COBOL                 *        00060019
-      *                                                        *        00070019
+      *  OBJETIVO: PRï¿½CTICA CODIFICACIï¿½N COBOL                 *        00060019
+      *  ESTE PROGRAMA RECORRE UN ARCHIVO PLANO DE NOVEDADES.
+      *  SI EL TIPO DE DOCUMENTO ES VALIDO LO GRABA EN UN ARCHIVO
+      *  PLANO DE SALIDA, SI NO ES VALIDO SE INFORMA POR DISPLAY                                                      *        00070019
       *                                                        *        00080019
       **********************************************************        00090019
        ENVIRONMENT DIVISION.                                            00100019
@@ -183,7 +185,7 @@
            ADD 1 TO WS-CANT-ERR                                         02111023
                                                                         02111123
            DISPLAY 'TIPO DE DOCUMENTO INVALIDO!'                        02111223
-           DISPLAY 'DOCUMENTO N°: ' WS-CANT-LEIDOS                      02111323
+           DISPLAY 'DOCUMENTO Nï¿½: ' WS-CANT-LEIDOS                      02111323
            DISPLAY 'ES DE TIPO:   ' NOV-TIP-DOC                         02111423
            .                                                            02111523
        2300-MOSTRAR-REG-ERR-F. EXIT.                                    02112023

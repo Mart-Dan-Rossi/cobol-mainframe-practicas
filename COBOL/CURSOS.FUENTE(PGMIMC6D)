@@ -1,7 +1,12 @@
        IDENTIFICATION DIVISION.                                         00010000
       *                                                        *        00010100
         PROGRAM-ID PGMIMC6D.                                            00010201
-      *                                                        *        00010300
+      *ESTE PROGRAMA TOMA UN ARCHIVO PLANO DE CLIENTES PARA 
+      *HACER UN CORTE SIMPLE DE CONTROL Y GRABAR EN UN ARCHIVO
+      *DE IMPRESION LOS CLIENTES SIEMPRE Y CUANDO TENGAN UN TIPO
+      *DE CUENTA VALIDA. SALTOS DE PAGINA CADA 40 LINEAS O EN CORTE. 
+      
+                                                              *        00010300
        ENVIRONMENT DIVISION.                                            00019100
       *                                                        *        00019200
        CONFIGURATION SECTION.                                           00019300

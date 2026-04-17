@@ -4,15 +4,18 @@
       **********************************************************        00040000
       *                                                        *        00050000
       *  PROGRAMA LISTADOR                                     *        00060000
-      *                                                        *        00070000
+      *  CONSULTA UN ARCHIVO PLANO DE NOEVEDADES. POR CADA NOVEDAD
+      *  BUSCA EN UN ARCHIVO PLANO INDEXADO AL USUARIO AL QUE SE LE
+      *  DEBEN EFECTUAR CAMBIOS.
+      *
+      *  TANTO SI SE ENCUENTRA UN CLIENTE PARA LA NOVEDAD SE VA A
+      *  GENERAR UNA LINEA EN UN ARCHIVO PLANO DE SALIDA.
+      *
+      *  SI SE ENCUENTRA SE AGREGA EL NOMBRE A LOS DATOS, SI NO
+      *  SE LE AGREGA 'NO ENCONTRADO' EN SU LUGAR.
+      *  
+      *  SE PRODUCE SALTO DE PAGINA CADA 65 LINEAS.
       **********************************************************        00080000
-      *      MANTENIMIENTO DE PROGRAMA                         *        00090000
-      **********************************************************        00100000
-      *  FECHA   *    DETALLE        * COD *                            00110000
-      **************************************                            00120000
-      *          *                   *     *                            00130000
-      *          *                   *     *                            00140000
-      **************************************                            00150000
        ENVIRONMENT DIVISION.                                            00160000
        CONFIGURATION SECTION.                                           00170000
        SPECIAL-NAMES.                                                   00180000
