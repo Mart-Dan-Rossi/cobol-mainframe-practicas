@@ -80,10 +80,6 @@
                                                                         00046508
        77  WS-MENSAJE-ERROR-NOMBRE   PIC X(15) VALUE                    00046607
                            'NOMBRE INVALIDO'.                           00046707
-                                                                        00046809
-      *01  WS-FLAG-ERR-VAL-FECNAC   PIC X.                              00046909
-      *    88  WS-ERROR-VAL-FECNAC   VALUE 'T'.                         00047009
-      *    88  WS-FECNAC-VALIDA    VALUE 'F'.                           00047109
                                                                         00047307
        77  WS-MENSAJE-ERROR-FECNAC   PIC X(28) VALUE                    00047407
                            'FECHA DE NACIMIENTO INVALIDA'.              00047507
@@ -106,16 +102,13 @@
           03 WS-MASCARA-FECHA-ANIO PIC 9(4)     VALUE ZEROS.            00050408
           03 WS-MASCARA-FECHA-MES  PIC 99       VALUE ZEROS.            00050508
           03 WS-MASCARA-FECHA-DIA  PIC 99       VALUE ZEROS.            00050608
-                                                                        00050709
-      *01 WS-ANIO-BICIESTO PIC X.                                       00050811
-      *   88 WS-ES-BICIESTO VALUE 'T'.                                  00050911
-      *   88 WS-NO-BICIESTO VALUE 'F'.                                  00051011
                                                                         00051108
       ******************************************************            00052009
       *    COPY NOV                                        *            00052109
       ******************************************************            00052209
            COPY NOVECLIE.                                               00052309
-                                                                        00052409
+           COPY RVALFWS.
+           
        01 WS-TITULO.                                                    00052509
           03  FILLER               PIC X(41)    VALUE                   00052609
            'LISTADO DE ERRORES EN NOVEDADES - FECHA: '.                 00052709
@@ -508,47 +501,10 @@
        F-4050-VALIDO-NOMBRE. EXIT.                                      00126209
                                                                         00126309
        4060-VALIDO-FECNAC.                                              00126409
-      *    SET WS-FECNAC-VALIDA TO TRUE                                 00126509
-      *    SET WS-NO-BICIESTO TO TRUE                                   00126609
-      *                                                                 00126709
-      *    IF WS-MASCARA-FECHA IS NOT NUMERIC                           00126809
-      *       SET WS-ERROR-VAL-FECNAC TO TRUE                           00126909
-      *    END-IF                                                       00127009
-      *                                                                 00127109
-      *    IF WS-FECNAC-VALIDA                                          00127209
-      *       IF (WS-MASCARA-FECHA-ANIO MOD 400 = 0) OR                 00127309
-      *          (WS-MASCARA-FECHA-ANIO MOD 4 = 0 AND                   00127409
-      *           WS-MASCARA-FECHA-ANIO MOD 100 NOT = 0)                00127509
-      *           SET WS-ES-BICIESTO TO TRUE                            00127609
-      *       END-IF                                                    00127709
-      *                                                                 00127809
-      *       EVALUATE WS-MASCARA-FECHA-MES                             00127909
-      *                                                                 00128009
-      *          WHEN 1 3 5 7 8 10 12                                   00128109
-      *               IF WS-MASCARA-FECHA-DIA > 31                      00128209
-      *                   SET WS-ERROR-VAL-FECNAC TO TRUE               00128309
-      *               END-IF                                            00128409
-      *                                                                 00128509
-      *          WHEN 4 6 9 11                                          00128609
-      *               IF WS-MASCARA-FECHA-DIA > 30                      00128709
-      *                   SET WS-ERROR-VAL-FECNAC TO TRUE               00128809
-      *               END-IF                                            00128909
-      *                                                                 00129009
-      *          WHEN 2                                                 00129109
-      *               IF WS-ES-BISIESTO                                 00129209
-      *                   IF WS-MASCARA-FECHA-DIA > 29                  00129309
-      *                       SET WS-ERROR-VAL-FECNAC TO TRUE           00129409
-      *                   END-IF                                        00129509
-      *               ELSE                                              00129609
-      *                   IF WS-MASCARA-FECHA-DIA > 28                  00129709
-      *                       SET WS-ERROR-VAL-FECNAC TO TRUE           00129809
-      *                   END-IF                                        00129909
-      *               END-IF                                            00130009
-      *       END-EVALUATE                                              00130109
-      *    END-IF                                                       00130209
-                                                                        00130309
-      *    IF WS-ERROR-VAL-FECNAC                                       00130409
-           IF REG-FECNAC = SPACES                                       00130509
+           MOVE REG-FECNAC TO R-VALID-FECHA.
+           COPY RVALFPD.
+                         
+           IF R-VALID-FECHA-NEGATIVO                                    00130509
               MOVE WS-MENSAJE-ERROR-FECNAC   TO REG-DESC-ERROR          00131509
                                                                         00131609
               PERFORM 8000-MOSTRAR-ERRORES                              00131709

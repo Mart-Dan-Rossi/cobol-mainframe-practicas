@@ -70,6 +70,10 @@
            88  WS-OK                  VALUE 'Y'.                        00047200
            88  WS-NO-OK               VALUE 'N'.                        00047300
 
+       77  WS-VALIDACIONES  PIC X.                                      
+           88  WS-VALIDACIONES-OK     VALUE 'Y'.                        
+           88  WS-VALIDACIONES-NO-OK  VALUE 'N'.                        
+
        77  WS-OP-CL-SQL     PIC XX    VALUE SPACES.
        77  WS-OP-GR-CL-FS   PIC XX    VALUE SPACES.
                                                                         00047400
@@ -178,6 +182,7 @@
 
       *CONTADORES                                                       00114000
        77  WS-CANT-LEIDOS          PIC 9(3)            VALUE ZEROS.     00114100
+       77  WS-CANT-ERRONEOS        PIC 9(3)            VALUE ZEROS.     
        77  WS-CANT-IMPRESOS        PIC 9(3)            VALUE ZEROS.     00114100
        77  WS-CORTE-MEN-ANT        PIC 99              VALUE ZEROS.     00114301
        77  WS-CORTE-MAY-ANT        PIC 99              VALUE ZEROS.     00114301
@@ -320,6 +325,9 @@
            EVALUATE TRUE
       *SE LEE CON EXITO
              WHEN SQLCODE EQUAL ZEROS
+                PERFORM 2510-VALIDA-LECTURA
+                   THRU F-2510-VALIDA-LECTURA
+                   
                 ADD 1 TO WS-CANT-LEIDOS                                 00730000
       
       *SI ACABA EL CURSOR
@@ -347,7 +355,66 @@
            END-EVALUATE                                                 00820000
            .                                                            00830000
        F-2500-LEER. EXIT.                                               00840000
-                                                                        00830000
+
+       2510-VALIDA-LECTURA.
+           SET WS-VALIDACIONES-OK TO TRUE
+
+           IF WS-TIPCUEN IS NUMERIC OR WS-TIPCUEN = SPACES
+               MOVE 'TIPO DE CUENTA ERRONEA LEYENDO' TO WS-TITULO-ERROR
+               MOVE WS-TIPCUEN TO WS-DATO-ERROR
+
+               SET WS-VALIDACIONES-NO-OK TO TRUE
+
+               PERFORM 11000-DISPLAY-ERROR
+                  THRU F-11000-DISPLAY-ERROR
+           END-IF
+
+           IF WS-NROCUEN IS NOT NUMERIC OR WS-NROCUEN = ZEROS
+               MOVE 'NRO DE CUENTA ERRONEO LEYENDO' TO WS-TITULO-ERROR
+               MOVE WS-NROCUEN TO WS-DATO-ERROR
+
+               SET WS-VALIDACIONES-NO-OK TO TRUE
+
+               PERFORM 11000-DISPLAY-ERROR
+                  THRU F-11000-DISPLAY-ERROR
+           END-IF
+
+           IF WS-SUCUEN IS NOT NUMERIC OR WS-SUCUEN = ZEROS
+               MOVE 'SUCURSAL ERRONEA LEYENDO' TO WS-TITULO-ERROR
+               MOVE WS-SUCUEN TO WS-DATO-ERROR
+
+               SET WS-VALIDACIONES-NO-OK TO TRUE
+
+               PERFORM 11000-DISPLAY-ERROR
+                  THRU F-11000-DISPLAY-ERROR
+           END-IF
+
+           IF WS-NROCLI IS NOT NUMERIC OR WS-NROCLI = ZEROS
+             MOVE 'NRO DE CLIENTE ERRONEO LEYENDO' TO WS-TITULO-ERROR
+             MOVE WS-NROCLI TO WS-DATO-ERROR
+
+             SET WS-VALIDACIONES-NO-OK TO TRUE
+
+             PERFORM 11000-DISPLAY-ERROR
+                THRU F-11000-DISPLAY-ERROR
+           END-IF
+
+           IF WS-SALDO IS NOT NUMERIC
+             MOVE 'SALDO ERRONEO LEYENDO' TO WS-TITULO-ERROR
+             MOVE WS-SALDO TO WS-DATO-ERROR
+
+             SET WS-VALIDACIONES-NO-OK TO TRUE
+
+             PERFORM 11000-DISPLAY-ERROR
+                THRU F-11000-DISPLAY-ERROR
+           END-IF
+
+           IF WS-VALIDACIONES-NO-OK
+              ADD 1 TO WS-CANT-ERRONEOS
+           END-IF
+           .
+       F-2510-VALIDA-LECTURA. EXIT.     
+
        2600-CORTE-MAYOR.                                                00840000
            PERFORM 2700-CORTE-MENOR THRU F-2700-CORTE-MENOR             00620000
 
@@ -587,6 +654,9 @@
                    DISPLAY 'CANTIDAD REGISTROS IMPRESOS: '              01150000
                                                        WS-CANT-IMPRESOS
                 END-IF
+                IF WS-CANT-ERRONEOS > 0
+                   DISPLAY 'CANTIDAD REGISTROS ERRONEOS: ' WS-CANT-ERRONEOS 01150000
+                END-IF
               END-IF                                                    01160000
            END-IF                                                       01160000
            .                                                            01160000
@@ -626,11 +696,11 @@
            DISPLAY '***************************************************'
            IF WS-DATO-ERROR = SPACES
               DISPLAY '* '                                                  0035
-                          WS-TITULO-ERROR WS-SQLCODE
+                          WS-TITULO-ERROR ' ' WS-SQLCODE
               DISPLAY ' *'                                                  0035
            ELSE
               DISPLAY '* '                                                  0035
-                          WS-TITULO-ERROR WS-DATO-ERROR
+                          WS-TITULO-ERROR ' ' WS-DATO-ERROR
               DISPLAY ' *'                                                  0035
            END-IF
            DISPLAY '***************************************************'
