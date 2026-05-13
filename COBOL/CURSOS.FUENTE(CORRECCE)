@@ -1,7 +1,7 @@
        IDENTIFICATION DIVISION.                                         00010000
       *                                                        *        00010100
         PROGRAM-ID PGMFBC6D.
-                                                    00010201
+                                                    
       *ESTE PROGRAMA CONSULTA EL SQL TRAYENDO UN CURSOR QUE TIENE
       *DATOS DE CUENTAS DE USUARIOS QUE HAYAN CREADO LA CUENTA
       *ANTES DEL 2025-06-05.
@@ -17,7 +17,7 @@
       *UN NUEVO SALTO.
 
 
-                                                                     00010300
+                                                                        00010300
        ENVIRONMENT DIVISION.                                            00019100
       *                                                        *        00019200
        CONFIGURATION SECTION.                                           00019300
@@ -185,7 +185,6 @@
        77  WS-TOTAL-CMAY           PIC S9(7)V99        VALUE ZEROS.     00114601
        77  WS-CUENTA-CMEN          PIC S9(7)V99        VALUE ZEROS.     00114601
        77  WS-CUENTA-CMAY          PIC S9(7)V99        VALUE ZEROS.     00114601
-       77  WS-BANDERA-PPIO         PIC X               VALUE 'T'.
 
        77  WS-GUARDO-DATOS-IMPRESION PIC X(133)        VALUE SPACES.
                                                                         00114701
@@ -219,8 +218,7 @@
            MOVE WS-FECHA-AA TO WS-TITULO-ANIO
            MOVE WS-FECHA-MM TO WS-TITULO-MES
            MOVE WS-FECHA-DD TO WS-TITULO-DIA
-
-           MOVE 'T' TO WS-BANDERA-PPIO
+      
       *REALIZO OPERACIONES PARA GESTIONAR MAS FACILMENTE LOS SALTOS DE
       *PAGINAS LUEGO.
            SUBTRACT 1 FROM WS-MAX-LINEAS
@@ -459,6 +457,7 @@
 
            MOVE SPACES TO REG-SALIDA
 
+           ADD 1 TO WS-CUENTA-PAGINA
            MOVE 1 TO WS-CUENTA-LINEA
            .
        F-7000-IMP-TITULOS. EXIT.
