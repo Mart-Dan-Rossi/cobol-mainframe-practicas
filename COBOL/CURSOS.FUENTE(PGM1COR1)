@@ -45,6 +45,10 @@
        77  WS-LECTURA-OK    PIC X.                                      00047100
            88  WS-OK                  VALUE 'Y'.                        00047200
            88  WS-NO-OK               VALUE 'N'.                        00047300
+
+       77  WS-VALIDACIONES  PIC X.                                      
+           88  WS-VALIDACIONES-OK     VALUE 'Y'.                        
+           88  WS-VALIDACIONES-NO-OK  VALUE 'N'. 
                                                                         00047400
       **************************************                            00048000
       *         LAYOUT SUCURSAL            *                            00049000
@@ -53,6 +57,7 @@
                                                                         00113900
       * CONTADOR DE LEIDOS                                              00114000
        77  WS-CANT-LEIDOS          PIC 9(3)            VALUE ZEROS.     00114100
+       77  WS-CANT-ERRONEOS        PIC 9(3)            VALUE ZEROS.     
        77  WS-SUC-EDIT             PIC ZZ9             VALUE ZEROS.     00114200
        77  WS-SUC-TIP-DOC-ANT      PIC XX              VALUE SPACES.    00114301
        77  WS-TOTAL-TIP-DOC        PIC 9(3)            VALUE ZEROS.     00114601
@@ -137,6 +142,9 @@
                                                                         00700000
            EVALUATE WS-FILE-CLI                                         00710000
               WHEN '00'                                                 00720000
+                  PERFORM 2510-VALIDA-LECTURA
+                     THRU F-2510-VALIDA-LECTURA
+
                   ADD 1 TO WS-CANT-LEIDOS                               00730000
               WHEN '10'                                                 00740000
                   SET WS-FIN-CLI  TO TRUE                               00750000
@@ -149,7 +157,57 @@
            .                                                            00830000
                                                                         00830000
        F-2500-LEER. EXIT.                                               00840000
-                                                                        00830000
+
+       2510-VALIDA-LECTURA.
+           IF WS-SUC-TIP-DOC IS NOT = 'DU'
+                                  AND 'PA'
+                                  AND 'PE'
+                                  AND 'CI'
+              SET WS-VALIDACIONES-NO-OK TO TRUE
+              DISPLAY 'TIPO DE DOCUMENTO ERRONEO LEYENDO '
+                                                          WS-SUC-TIP-DOC
+                                                      ' ' WS-SUC-NRO-DOC
+           END-IF
+
+           IF WS-SUC-NRO-DOC IS NOT NUMERIC OR WS-SUC-NRO-DOC = ZEROS
+              SET WS-VALIDACIONES-NO-OK TO TRUE
+              DISPLAY 'NRO DE DOCUMENTO ERRONEO LEYENDO '
+                                                          WS-SUC-TIP-DOC
+                                                      ' ' WS-SUC-NRO-DOC
+           END-IF
+
+           IF WS-SUC-NOMAPE IS NUMERIC OR WS-SUC-NOMAPE = SPACES
+              SET WS-VALIDACIONES-NO-OK TO TRUE
+              DISPLAY 'NOMBRE APELLIDO ERRONEO LEYENDO '                                                          
+                                                          WS-SUC-TIP-DOC
+                                                      ' ' WS-SUC-NRO-DOC
+           END-IF
+
+           IF WS-SUC-EST-CIV IS NOT = 'SOLTERO'
+                                  AND 'CASADO'
+                                  AND 'DIVORCIADO'
+                                  AND 'VIUDO'
+              SET WS-VALIDACIONES-NO-OK TO TRUE
+              DISPLAY 'ESTADO CIVIL ERRONEO LEYENDO ' 
+                                                          WS-SUC-TIP-DOC
+                                                      ' ' WS-SUC-NRO-DOC
+           END-IF
+
+           IF WS-SUC-SEXO IS NOT = 'M'
+                                  AND 'F'
+                                  AND 'O'
+              SET WS-VALIDACIONES-NO-OK TO TRUE
+              DISPLAY 'SEXO ERRONEO LEYENDO ' 
+                                                          WS-SUC-TIP-DOC
+                                                      ' ' WS-SUC-NRO-DOC
+           END-IF
+
+           IF WS-VALIDACIONES-NO-OK
+              ADD 1 TO WS-CANT-ERRONEOS
+           END-IF
+       F-2510-VALIDA-LECTURA. EXIT.                                     
+                                                                        00840000
+
        2600-CORTE-TIP-DOC.                                              00840000
 
            MOVE WS-TOTAL-TIP-DOC TO WS-SUC-EDIT
@@ -214,6 +272,11 @@
                   MOVE WS-CANT-LEIDOS TO  WS-SUC-EDIT                     011400
                   DISPLAY 'CANTIDAD REGISTROS LEIDOS  '   WS-SUC-EDIT     011500
                 END-IF                                                    011600
+                IF WS-CANT-ERRONEOS > 0
+                  DISPLAY '                           '                 
+                  MOVE WS-CANT-ERRONEOS TO  WS-SUC-EDIT                 
+                  DISPLAY 'CANTIDAD REGISTROS ERRONEOS  '   WS-SUC-EDIT 
+                END-IF                                                  
               END-IF
            END-IF                                                       01160000
            .                                                            01160000

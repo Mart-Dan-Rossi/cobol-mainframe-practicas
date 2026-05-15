@@ -1,0 +1,22 @@
+*******************************************************
+*        LAYOUT VALIDACIONES DE FECHAS                *
+*        KC03C6D.CURSOS.COPYLIB(RVALFWS)              *
+*******************************************************
+
+ 01 R-VALID-FECHA.
+     03 R-VALID-FECHA-ANIO      PIC 9(04) VALUE ZEROS.
+     03 R-VALID-FECHA-MES       PIC 9(02) VALUE ZEROS.
+     03 R-VALID-FECHA-DIA       PIC 9(02) VALUE ZEROS.
+ 
+ 01 R-VALID-FECHA-FLAG          PIC X.
+     88 R-VALID-FECHA-POSITIVO            VALUE 'T'.
+     88 R-VALID-FECHA-NEGATIVO            VALUE 'F'.
+
+*POSIBLES VALORES DE R-VALID-FECHA-DESC:
+*                                       'DIA NO VALIDO'
+*                                       'MES NO VALIDO' 
+ 01 R-VALID-FECHA-DESC          PIC X(13) VALUE SPACES.
+ 
+ 01 R-VALID-FECHA-BICIESTO-FLAG PIC X.
+     88 R-VALID-FECHA-ES-BICIESTO         VALUE 'T'.
+     88 R-VALID-FECHA-NO-BICIESTO         VALUE 'F'.

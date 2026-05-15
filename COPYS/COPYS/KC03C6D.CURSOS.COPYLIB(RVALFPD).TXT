@@ -1,0 +1,83 @@
+*********************************************************  
+*        LOGICAS DE VALIDACION DE FECHAS                *  
+*        KC03C6D.CURSOS.COPYLIB(RVALFPD)                *  
+*  REQUIERE RECIBIR:                                    *  
+*                    LA FECHA EN FORMATO AAAAMMDD       *  
+*                                                       *  
+*  LA FECHA SE RECIBE EN LA VARIABLE:                   *  
+*                            R-VALID-FECHA              *  
+*                                                       *  
+*  DEVUELVE BOOL EN VARIABLES:                          *  
+*        (BOOLEANO)          R-VALID-FECHA-FLAG         *  
+*        (VALIDO RTA: 'T')   R-VALID-FECHA-POSITIVO     *  
+*        (INVALIDO RTA: 'F') R-VALID-FECHA-NEGATIVO     *  
+*                                                       *  
+*  DEVUELVE DESCRIPCION DE ERROR EN:                    *  
+*                            R-VALID-FECHA-DESC         *  
+*********************************************************  
+     IF R-VALID-FECHA = ZERO                               
+         MOVE 9999 TO RETURN-CODE                          
+         DISPLAY 'FECHA NO RECIBIDA EN VALIDACION DE FECHA'
+     END-IF                                                
+                                                           
+     MOVE SPACES TO R-VALID-FECHA-DESC                     
+     SET R-VALID-FECHA-POSITIVO TO TRUE                    
+     SET R-VALID-FECHA-NO-BICIESTO TO TRUE                 
+                                                           
+     IF R-VALID-FECHA IS NOT NUMERIC                       
+        SET R-VALID-FECHA-NEGATIVO TO TRUE                 
+        MOVE 'FECHA NO NUMERICA' TO R-VALID-FECHA-DESC     
+     END-IF                                                
+                                                           
+     IF R-VALID-FECHA-POSITIVO                             
+        IF (FUNCTION MOD(R-VALID-FECHA-ANIO, 400) = 0) OR  
+           (FUNCTION MOD(R-VALID-FECHA-ANIO, 4) = 0 AND    
+           FUNCTION MOD(R-VALID-FECHA-ANIO, 100) NOT = 0)
+            SET R-VALID-FECHA-ES-BICIESTO TO TRUE                 
+        END-IF                                                    
+                                                                  
+        EVALUATE R-VALID-FECHA-MES                                
+                                                                  
+           WHEN 1                                                 
+           WHEN 3                                                 
+           WHEN 5                                                 
+           WHEN 7                                                 
+           WHEN 8                                                 
+           WHEN 10                                                
+           WHEN 12                                                
+                IF R-VALID-FECHA-DIA > 31                         
+                    SET R-VALID-FECHA-NEGATIVO TO TRUE            
+                    MOVE 'DIA NO VALIDO' TO R-VALID-FECHA-DESC    
+                END-IF                                            
+                                                                  
+           WHEN 4                                                 
+           WHEN 6                                                 
+           WHEN 9                                                 
+           WHEN 11                                                
+                IF R-VALID-FECHA-DIA > 30                         
+                    SET R-VALID-FECHA-NEGATIVO TO TRUE            
+                    MOVE 'DIA NO VALIDO' TO R-VALID-FECHA-DESC    
+                END-IF                                            
+                                                                  
+           WHEN 2                                                 
+                IF R-VALID-FECHA-ES-BICIESTO                      
+                    IF R-VALID-FECHA-DIA > 29                     
+                        SET R-VALID-FECHA-NEGATIVO TO TRUE        
+                        MOVE 'DIA NO VALIDO' TO R-VALID-FECHA-DESC
+                    END-IF                                        
+                ELSE                                              
+                    IF R-VALID-FECHA-DIA > 28                     
+                        SET R-VALID-FECHA-NEGATIVO TO TRUE        
+                        MOVE 'DIA NO VALIDO' TO R-VALID-FECHA-DESC
+                    END-IF                                        
+                END-IF                                            
+           WHEN OTHER                                             
+                SET R-VALID-FECHA-NEGATIVO TO TRUE                
+                MOVE 'MES NO VALIDO' TO R-VALID-FECHA-DESC        
+        END-EVALUATE                                              
+     END-IF                                                       
+                                                                  
+     MOVE ZEROS  TO R-VALID-FECHA                                 
+*********************************************************         
+*     FIN LOGICAS DE VALIDACION DE FECHAS               *         
+*********************************************************         
