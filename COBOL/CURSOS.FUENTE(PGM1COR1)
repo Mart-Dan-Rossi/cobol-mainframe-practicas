@@ -42,10 +42,6 @@
            88  WS-FIN-CLI             VALUE 'Y'.                        00045001
            88  WS-NO-FIN-CLI          VALUE 'N'.                        00046001
                                                                         00047000
-       77  WS-LECTURA-OK    PIC X.                                      00047100
-           88  WS-OK                  VALUE 'Y'.                        00047200
-           88  WS-NO-OK               VALUE 'N'.                        00047300
-
        77  WS-VALIDACIONES  PIC X.                                      
            88  WS-VALIDACIONES-OK     VALUE 'Y'.                        
            88  WS-VALIDACIONES-NO-OK  VALUE 'N'. 
@@ -142,6 +138,8 @@
                                                                         00700000
            EVALUATE WS-FILE-CLI                                         00710000
               WHEN '00'                                                 00720000
+                  SET WS-VALIDACIONES-OK TO TRUE
+                  
                   PERFORM 2510-VALIDA-LECTURA
                      THRU F-2510-VALIDA-LECTURA
 

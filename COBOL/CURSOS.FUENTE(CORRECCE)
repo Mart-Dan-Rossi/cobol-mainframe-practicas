@@ -57,19 +57,11 @@
        77  WS-IS-ULTIMA     PIC X.                                      00044001
            88  WS-ULTIMA-ITERACION    VALUE 'Y'.                        00045001
            88  WS-NO-ULTIMA-ITERACION VALUE 'N'.                        00046001
-                                                                        00047000
-       77  WS-IS-TITULO     PIC X.                                      00044001
-           88  WS-ES-TITULO           VALUE 'Y'.                        00045001
-           88  WS-NO-ES-TITULO        VALUE 'N'.                        00046001
 
        77  WS-IS-SALTO-ALT  PIC X.
            88  WS-ES-SALTO-ALT        VALUE 'Y'.
            88  WS-NO-ES-SALTO-ALT     VALUE 'N'.
                                                                         00047000
-       77  WS-LECTURA-OK    PIC X.                                      00047100
-           88  WS-OK                  VALUE 'Y'.                        00047200
-           88  WS-NO-OK               VALUE 'N'.                        00047300
-
        77  WS-VALIDACIONES  PIC X.                                      
            88  WS-VALIDACIONES-OK     VALUE 'Y'.                        
            88  WS-VALIDACIONES-NO-OK  VALUE 'N'.                        
