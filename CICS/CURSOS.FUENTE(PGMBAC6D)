@@ -36,10 +36,6 @@
           03 CT-DATASET           PIC X(08)  VALUE 'PERSOC6D'.          00300011
           03 CT-DATASET-LEN       PIC S9(04) COMP VALUE 160.            00310000
                                                                         00320000
-       01 WS-CHEQUEO              PIC X.                                00330000
-          88 WS-NO                                VALUE 'N'.            00340000
-          88 WS-SI                                VALUE 'Y'.            00350000
-                                                                        00360000
        01 WS-VARIABLES.                                                 00370000
           03 WS-MAP               PIC X(07)       VALUE 'MAP4C6D'.      00380009
           03 WS-MAPSET            PIC X(07)       VALUE 'MAP4C6D'.      00390009
